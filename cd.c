@@ -25,7 +25,9 @@ int cd(int nb_arg, char * arg, char * prev) {
 
     switch (nb_arg) {
         case 0 : 
-            // TODO : chdir() aller à home
+            if (chdir(getenv("HOME"))<0){
+                goto error;
+            }
             break;
         case 1 : 
             if (strcmp(arg,"-")==0) {
