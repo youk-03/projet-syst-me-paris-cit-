@@ -12,16 +12,9 @@ s'agit d'une référence valide), le précédent répertoire de travail si le
 paramètre est -, ou $HOME en l'absence de paramètre.
 La valeur de retour est 0 en cas de succès, 1 en cas d'échec.*/
 
-int cd(int nb_arg, char * arg, char * prev) {
-    char * current = malloc(PATH_MAX);
-    if (current==NULL){
-        perror("cd : malloc");
-        return 1;
-    }
-    if (getcwd(current,PATH_MAX)==NULL){
-        perror("cd : getcwd");
-        goto error;
-    }
+int cd(int nb_arg, char * arg) {
+    char old [PATH_MAX];
+    getcwd(old,PATH_MAX);
 
     switch (nb_arg) {
         case 0 : 
@@ -31,7 +24,7 @@ int cd(int nb_arg, char * arg, char * prev) {
             break;
         case 1 : 
             if (strcmp(arg,"-")==0) {
-                if (chdir(prev)<0){
+                if (chdir(getenv("OLDPATH"))<0){
                     perror("cd : chdir");
                     goto error;
                 }
@@ -43,14 +36,11 @@ int cd(int nb_arg, char * arg, char * prev) {
             } break;
         default : goto error;
     }
-    if (memmove(prev,current,strlen(current)+1)==NULL){
-        perror("cd : memmove");
-        goto error;
-    }
-    free(current);
+
+    setenv("OLDPATH",old,1);
+
     return 0;
 
     error :
-        free(current);
         return 1;
 }
