@@ -35,12 +35,4 @@ int pwd(int nb_args){
 }
 
 
-int main(int argc, char **argv) {
-if(argc!=1){
-    perror("pwd : argument number");
-    exit(1);
-}
-pwd(argc);
 
-  return 0;  
-}
