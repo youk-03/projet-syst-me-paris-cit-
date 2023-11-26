@@ -7,11 +7,8 @@
 #include "pwd.h"
 
 /*Prints current working directory*/
-int pwd(int nb_args){
+int pwd(){
 
-    if(nb_args!=1){
-        goto error ;
-    }
 
     char pwd[PATH_MAX];
     if (getcwd(pwd,PATH_MAX)==NULL){
