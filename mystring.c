@@ -5,6 +5,7 @@
 #include "mystring.h"
 #include <stdbool.h>
 #include <stddef.h>
+#include "interrogation_exit.h"
 
 struct string * string_new(size_t capacity) {
   if (capacity == 0) return NULL;
@@ -83,6 +84,10 @@ argument* split(const char* tosplit, char delim ){
   }
    //Case where tosplit == NULL
 
+   if(strcmp(tosplit,"")==0){
+    return NULL;
+   }
+
 
   for (size_t i=0; i<tosplit_l; i++){
     if(tosplit[i] == delim){
@@ -96,6 +101,9 @@ argument* split(const char* tosplit, char delim ){
     }
   }
   //initializing nbr_words
+  if(nbr_words == 0 && tosplit[0] == ' '){
+    return NULL;
+  }
 
   if(nbr_words == 0 && strcmp(tosplit," ")!=0){
     nbr_words=1; 
@@ -105,7 +113,7 @@ argument* split(const char* tosplit, char delim ){
   res= malloc(nbr_words*sizeof(char*));
 
   if(!res){
-    goto error; //GERER LE CAS ICI
+    goto error; 
   }
 
   is_delim=true;
@@ -116,9 +124,9 @@ argument* split(const char* tosplit, char delim ){
       is_delim=true;
       if(end >= start){
         res[words_it] = calloc((end-start+1)*sizeof(char)+1,(end-start+1)*sizeof(char)+1); //\0 + we count starting by 0
-        //malloc ici avant steven
+
       if(!res[words_it]){
-        goto error; //GERER LE CAS ICI AUSSI
+        goto error; 
       }
         strncpy(res[words_it],tosplit+start,end-start+1); //same
         words_it++;
@@ -137,40 +145,24 @@ argument* split(const char* tosplit, char delim ){
   if(!is_delim){
     end = tosplit_l-1;
     res[words_it] = calloc((end-start+1)*sizeof(char)+1,(end-start+1)*sizeof(char)+1); 
+    if(!res[words_it]){
+      goto error; 
+    }
     strncpy(res[words_it],tosplit+start,end-start+1); 
   }
   //if tosplit don't finish with delim last word is not in res, doing so here
 
   data = malloc(sizeof(argument));
+  if(!data){
+    goto error; 
+  }
   data->data=res;
   data->nbr_arg=nbr_words;
   //initializing the struct argument
   return data;
 
   error:
-  //free ce qu'il y a a free et lancé fonc command exit ///////////////////////////////////////////////////////////:
-  exit(0);
+  
+  exit_jsh(1); //free ici ?
 
 }
-
-// int main (int argc, char **argv){
-//   char* test= " c  o u c   o  u c ' e s  t mo i      encor e       ";
-
- 
-//   argument* tab = split(test,' ');
-//   int nbr_words = tab->nbr_arg; 
-//   printf("number : %d\n",nbr_words);
-
-//   for(int i=0; i<nbr_words; i++){
-//     printf("%s\n",tab->data[i]);
-// }
-
-// free_argument(tab);
-
-// return 1;
-
-  
-
-
-// }
-
