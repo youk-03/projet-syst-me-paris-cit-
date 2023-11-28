@@ -6,6 +6,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "interrogation_exit.h"
+#include <readline/readline.h>
+#include <readline/history.h>
+
 
 struct string * string_new(size_t capacity) {
   if (capacity == 0) return NULL;
@@ -64,7 +67,7 @@ void free_argument(argument* tofree){
 }
 
 //Return NULL if any arg is NULL
-argument* split(const char* tosplit, char delim ){ 
+argument* split(const char* tosplit, char delim ){
 
   argument* data = NULL;
 
@@ -110,7 +113,8 @@ argument* split(const char* tosplit, char delim ){
   }
   //case where there is no delim and tosplit is not only " "
 
-  res= malloc(nbr_words*sizeof(char*));
+
+  res= malloc((nbr_words+1)*sizeof(char*)); //+1 to add null at the very end
 
   if(!res){
     goto error; 
@@ -123,12 +127,13 @@ argument* split(const char* tosplit, char delim ){
       end=i-1;
       is_delim=true;
       if(end >= start){
-        res[words_it] = calloc((end-start+1)*sizeof(char)+1,(end-start+1)*sizeof(char)+1); //\0 + we count starting by 0
+        res[words_it] = malloc((end-start+1)*sizeof(char)+1); //\0 + we count starting by 0
 
       if(!res[words_it]){
         goto error; 
       }
         strncpy(res[words_it],tosplit+start,end-start+1); //same
+        res[words_it][end-start+1]='\0';
         words_it++;
       }
       }
@@ -144,13 +149,15 @@ argument* split(const char* tosplit, char delim ){
 
   if(!is_delim){
     end = tosplit_l-1;
-    res[words_it] = calloc((end-start+1)*sizeof(char)+1,(end-start+1)*sizeof(char)+1); 
+    res[words_it] = malloc((end-start+1)*sizeof(char)+1);
     if(!res[words_it]){
       goto error; 
     }
     strncpy(res[words_it],tosplit+start,end-start+1); 
+    res[words_it][end-start+1]='\0';
   }
   //if tosplit don't finish with delim last word is not in res, doing so here
+  res[nbr_words] = NULL; //for exec
 
   data = malloc(sizeof(argument));
   if(!data){
@@ -162,7 +169,7 @@ argument* split(const char* tosplit, char delim ){
   return data;
 
   error:
-  
-  exit_jsh(1); //free ici ?
+  perror("in split: ");
+  exit_jsh(1); 
 
 }

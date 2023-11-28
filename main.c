@@ -7,6 +7,7 @@
 #include "pwd.h"
 #include "prompt.h"
 #include "interrogation_exit.h"
+#include "forkexec.h"
 #include <readline/readline.h>
 #include <readline/history.h>
 #include<unistd.h>
@@ -36,7 +37,7 @@ int main (int argc, char *argv[]){
         goto error;
     }
     line_read = readline(prompt);
-    if(!line_read){
+    if(!line_read){ //ctrl+D
         exit_jsh(last_return);
     }
 
@@ -53,16 +54,30 @@ int main (int argc, char *argv[]){
             exit_jsh(last_return);
         } 
         break; 
-        case 2: last_return = pwd(); break; //pwd
-        case 3: break; //cd
-        case 4: break; //forkexec
+        case 2: last_return = pwd();break; //pwd
+        case 3: 
+            if(arg->nbr_arg == 1){ //case where it's only cd
+                last_return = cd(0,NULL);
+            }
+            else if(arg->nbr_arg > 2){ //case where cd is incorrect arg like "cd dd sds z"
+
+                //message d'erreur comme quoi cd a arg invalide vers stderr
+                //-bash: cd: too many arguments
+            }
+
+            else{//case for cd - or cd my/path
+                last_return = cd(1,arg->data[1]);
+            }
+
+        break; //cd
+        case 4: last_return = forkexec(arg->data[0],arg->data); break; //forkexec
         default: break;
 
     }
     if(arg != NULL){
       free_argument(arg);
     }
-    if(line_read != NULL){ 
+    if(line_read){ 
      free(line_read);
     line_read = NULL;
     }

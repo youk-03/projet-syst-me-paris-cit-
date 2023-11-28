@@ -6,6 +6,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "mystring.h"
+#include <stdbool.h>
 #define PROMPT_CHAR_MAX 25
 
 char* truncate_to_size (char* path){
@@ -24,6 +25,7 @@ char* truncate_to_size (char* path){
 
 char* create_prompt (char *path, int job_number){
 
+bool istrunc = false;
 size_t s_path = strlen(path);
 if(s_path > 25){
 
@@ -33,9 +35,10 @@ if(s_path > 25){
       goto error;
    }
    s_path=25;
+   istrunc = true;
 
 }
-size_t length = 25+s_path+1; //25= size of needed char for everything other than path
+size_t length = 26+s_path+1; //26= size of needed char for everything other than path pas assez alloc ici
 
 char *res = malloc(length); 
 if(!res){
@@ -49,8 +52,14 @@ memmove(res+17,path,s_path);
 char *res3 = "\001\033[00m\002$ ";
 memmove(res+17+s_path, res3,9);
 memmove(res+17+s_path+9,"\0",1);
+
+if(istrunc){ 
+if(path){
 free(path);
-return res;
+path=NULL;
+}
+}
+ return res;
 
 error: 
 perror("malloc create_prompt");
@@ -86,3 +95,13 @@ int get_command(argument* arg){
 
 
 }
+
+// int main (int argc, char** argv){
+// char *pwd = getcwd(NULL,0);
+// char *prompt = create_prompt(pwd,0);
+// printf("%s\n",prompt);
+// free(pwd);
+// free(prompt);
+// return 0;
+
+// }
