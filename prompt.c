@@ -96,12 +96,3 @@ int get_command(argument* arg){
 
 }
 
-// int main (int argc, char** argv){
-// char *pwd = getcwd(NULL,0);
-// char *prompt = create_prompt(pwd,0);
-// printf("%s\n",prompt);
-// free(pwd);
-// free(prompt);
-// return 0;
-
-// }

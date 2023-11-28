@@ -3,8 +3,9 @@
 #include "interrogation_exit.h"
 
 
-void interrogation_point (int val){
+int interrogation_point (int val){
     printf("\nReturn value of last command : %d\n", val);
+    return 0;
 }
 
 void exit_jsh (int val){

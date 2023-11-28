@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include "forkexec.h"
+#include "interrogation_exit.h"
 
 
 
@@ -19,7 +20,7 @@ int forkexec(char * file_name, char ** arguments){
         errno=0;
         execvp(file_name,arguments);
         perror("forkexec: Incorrect command :");
-        return 1;
+        exit_jsh(1);
     } else {
         waitpid(process_id,&status,0);
         return WEXITSTATUS(status) ;

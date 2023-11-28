@@ -10,7 +10,7 @@
 #include "forkexec.h"
 #include <readline/readline.h>
 #include <readline/history.h>
-#include<unistd.h>
+#include <unistd.h>
 
 int main (int argc, char *argv[]){
     rl_outstream = stderr;
@@ -45,7 +45,7 @@ int main (int argc, char *argv[]){
 
     arg=split(line_read,' ');
     switch(get_command(arg)){
-        case 0: interrogation_point(last_return); break; //?
+        case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
         if(arg->nbr_arg > 1){
             exit_jsh(atoi(arg->data[1]));
@@ -60,9 +60,12 @@ int main (int argc, char *argv[]){
                 last_return = cd(0,NULL);
             }
             else if(arg->nbr_arg > 2){ //case where cd is incorrect arg like "cd dd sds z"
-
-                //message d'erreur comme quoi cd a arg invalide vers stderr
-                //-bash: cd: too many arguments
+                last_return=1;
+                char *error= "cd: too many arguments\n";
+                if(write(STDERR_FILENO, error, strlen(error)) != strlen(error)){
+                    perror("main: write ");
+                }
+                
             }
 
             else{//case for cd - or cd my/path
@@ -70,7 +73,7 @@ int main (int argc, char *argv[]){
             }
 
         break; //cd
-        case 4: last_return = forkexec(arg->data[0],arg->data); break; //forkexec
+        case 4: last_return = forkexec(arg->data[0],arg->data); puts("ici"); break; //forkexec
         default: break;
 
     }
