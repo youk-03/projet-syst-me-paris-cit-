@@ -73,7 +73,7 @@ int main (int argc, char *argv[]){
             }
 
         break; //cd
-        case 4: last_return = forkexec(arg->data[0],arg->data); puts("ici"); break; //forkexec
+        case 4: last_return = forkexec(arg->data[0],arg->data); break; //forkexec
         default: break;
 
     }
