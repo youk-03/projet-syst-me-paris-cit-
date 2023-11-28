@@ -4,7 +4,7 @@
 
 
 int interrogation_point (int val){
-    printf("\nReturn value of last command : %d\n", val);
+    printf("%d\n", val);
     return 0;
 }
 
