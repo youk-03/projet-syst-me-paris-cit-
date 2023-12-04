@@ -6,6 +6,7 @@
 #include "cd.h"
 #include "pwd.h"
 #include "prompt.h"
+#include "processus.h"
 #include "interrogation_exit.h"
 #include "forkexec.h"
 #include <readline/readline.h>
@@ -23,6 +24,7 @@ int main (int argc, char *argv[]){
     char* prompt= NULL;
     argument *arg = NULL;
     char *path = NULL;
+    processus_table* proc_table = NULL;
 
 
     while(1){
