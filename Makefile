@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall 
 LIBS = -lreadline
-DEPS=forkexec.h interrogation_exit.h mystring.h prompt.h pwd.h cd.h
+DEPS=forkexec.h interrogation_exit.h mystring.h prompt.h pwd.h cd.h processus.h
 EXEC=jsh
 
 all : jsh
