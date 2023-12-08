@@ -1,5 +1,5 @@
 #ifndef PROCESSUS_H
-#define PROCESSUS_H_H
+#define PROCESSUS_H
 
 struct processus {
   pid_t process_pid;
