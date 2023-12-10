@@ -1,6 +1,10 @@
 #ifndef PROCESSUS_H
 #define PROCESSUS_H_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+
 struct processus {
   pid_t process_pid;
   pid_t father_pid; //?? utile
@@ -18,6 +22,8 @@ int length;
 };
 typedef struct processus_table processus_table;
 
+//processus table
+
 processus_table* allocate_processus_table(size_t capacity);
 
 void free_processus_table(processus_table* table);
@@ -26,8 +32,9 @@ int add_processus (processus* processus, processus_table* table );
 
 int delete_processus (processus* processus, processus_table* table);
 
-//fonction qui alloue processus** av taille + une qui realloc + free + ajoute processus 
-//fonc retire processus table et decale les autres
+//processus
+
+void free_processus (processus* proc);
 
 
 #endif
