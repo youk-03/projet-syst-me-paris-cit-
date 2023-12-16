@@ -28,7 +28,7 @@ processus_table* allocate_processus_table(size_t capacity);
 
 void free_processus_table(processus_table* table);
 
-int add_processus (processus* processus, processus_table* table );
+void add_processus (processus* processus, processus_table* table );
 
 int delete_processus (processus* processus, processus_table* table);
 

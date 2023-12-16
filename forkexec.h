@@ -3,4 +3,6 @@
 
 int forkexec(char *, char **); 
 
+int forkexecBackground( char *, char **);
+
 #endif
