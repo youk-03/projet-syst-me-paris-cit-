@@ -36,5 +36,7 @@ int delete_processus (processus* processus, processus_table* table);
 
 void free_processus (processus* proc);
 
+processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, char* name, int id);
+
 
 #endif
