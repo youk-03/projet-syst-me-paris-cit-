@@ -15,7 +15,8 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
     if (arg1[0]=='%'){
         string_jobnumber=malloc(strlen(arg1)); //
         if(string_jobnumber==NULL) {
-            goto error ; 
+            perror("malloc");
+            exit(1);
         }
         memcpy(string_jobnumber,arg1+1,strlen(arg1)-1);
         // int sig=kill(atoi(string_jobnumber), SIGTERM); //this is not it, not functional for now
@@ -33,7 +34,8 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
         string_signumber=malloc(strlen(arg1));
         if(string_signumber==NULL) {
-            goto error ; 
+            perror("malloc");
+            exit(1);
         }
         memmove(string_signumber,arg1+1,strlen(arg1));
         int sig=kill(atoi(arg2),atoi(string_signumber));
