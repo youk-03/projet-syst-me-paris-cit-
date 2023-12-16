@@ -59,4 +59,4 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
 int main(){
 kill_cmd("-9","28214"); //-9 sigkill, -19 sigstop, -18 sigcont (useful for tests)
-}
+}//

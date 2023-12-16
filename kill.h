@@ -2,5 +2,4 @@
 #define KILL_H
 
 int kill_cmd(char *, char *);
-
 #endif
