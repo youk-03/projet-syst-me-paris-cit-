@@ -41,7 +41,9 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
          if (sig==-1) {
             goto error ;
          }
+
          free(string_signumber);
+         
     return 0 ;
     } 
 
