@@ -36,14 +36,13 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
             goto error ; 
         }
         memmove(string_signumber,arg1+1,strlen(arg1));
-        printf(" str signum :%s \n ",string_signumber);
         int sig=kill(atoi(arg2),atoi(string_signumber));
          if (sig==-1) {
             goto error ;
          }
 
          free(string_signumber);
-         
+
     return 0 ;
     } 
 
