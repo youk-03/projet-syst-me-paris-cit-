@@ -117,6 +117,27 @@ void print_test (processus_table* table){
     }
 }
 
+int running_or_stopped (processus_table* proc_table){
+    printf("Bonjour");
+    if (proc_table == NULL){
+        perror("table de processus nulle");
+        return 0;
+    }
+    for (int i=0; i<proc_table->length; i++){
+        processus * proc = proc_table->table[i] ;
+        if (proc == NULL){
+            perror("processus null");
+        } else {
+            int p = proc->status;
+            if (p==1 || p==2){
+                return 1;
+            } 
+        }
+        
+    }
+    return 0;
+}
+
 // int main (int argc, char** argv){
 
 //     processus *test1 = NULL;

@@ -40,7 +40,7 @@ int main (int argc, char *argv[]){
     }
     line_read = readline(prompt);
     if(!line_read){ //ctrl+D
-        exit_jsh(last_return);
+        exit_jsh(last_return,proc_table);
     }
 
     add_history (line_read);
@@ -50,10 +50,10 @@ int main (int argc, char *argv[]){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
         if(arg->nbr_arg > 1){
-            exit_jsh(atoi(arg->data[1]));
+            exit_jsh(atoi(arg->data[1]),proc_table);
          }
         else{
-            exit_jsh(last_return);
+            exit_jsh(last_return,proc_table);
         } 
         break; 
         case 2: last_return = pwd();break; //pwd
@@ -97,7 +97,7 @@ int main (int argc, char *argv[]){
 }
 
   error:
-    exit_jsh(1);
+    exit_jsh(1,proc_table);
 
 
    

@@ -170,6 +170,6 @@ argument* split(const char* tosplit, char delim ){
 
   error:
   perror("in split: ");
-  exit_jsh(1); 
+  exit(1); //TODO : changer
 
 }

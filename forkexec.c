@@ -20,7 +20,7 @@ int forkexec(char * file_name, char ** arguments){
         errno=0;
         execvp(file_name,arguments);
         perror("forkexec: Incorrect command :");
-        exit_jsh(1);
+        exit(1); //TODO : changer
     } else {
         waitpid(process_id,&status,0);
         return WEXITSTATUS(status) ;
@@ -38,7 +38,7 @@ int forkexecBackground( char * file_name, char ** arguments){
         errno=0;
         execvp(file_name,arguments);
         perror("forkexecBackground : Incorrect command :");
-        exit_jsh(1);
+        exit(1); //TODO: changer
     } else {
         return process_id ;
     }
