@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/wait.h>
 #include "forkexec.h"
 #include "interrogation_exit.h"
+#include "mystring.h"
 
 
 
@@ -42,4 +44,18 @@ int forkexecBackground( char * file_name, char ** arguments){
     } else {
         return process_id ;
     }
+}
+
+bool is_background(argument* arg){
+
+    if(strcmp(arg->data[arg->nbr_arg-1], "&") == 0){
+        free(arg->data[arg->nbr_arg-1]);
+        arg->data[arg->nbr_arg-1] = NULL;
+        arg->nbr_arg--;
+
+        return true;
+    }
+
+    return false;
+
 }

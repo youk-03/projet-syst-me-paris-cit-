@@ -5,7 +5,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <stddef.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
 //processus_table
 
 
@@ -38,7 +39,6 @@ void free_processus_table(processus_table* table){
 }
 
 void add_processus (processus* processus, processus_table* table ){
-
     if(table->capacity == table->length){
         table->capacity = table->capacity*2;
         table->table = realloc(table->table, sizeof(processus)*table->capacity);
@@ -87,7 +87,7 @@ int delete_processus (processus* processus, processus_table* table){
 
 void free_processus (processus* proc){
 
-    //free(proc->name); ??????????????????????????????
+    free(proc->name); 
     free(proc);
     proc=NULL;
 }
@@ -100,7 +100,9 @@ processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, 
     res->process_pid = process_pid;
     res->father_pid = father_pid;
     res->status = status;
-    res->name = name; //malloc ?
+    res->name = malloc(strlen(name)+1); 
+    res->name = strcpy(res->name,name);
+    if(!res->name) goto error;
     res->id = id;
 
     return res;
@@ -109,12 +111,40 @@ processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, 
     //exit_jsh
 }
 
+
 void print_test (processus_table* table){
     for(int i=0; i<table->length; i++){
 
         printf("je suis: %d, je m'appelle: %s\n", table->table[i]->process_pid, table->table[i]->name);
 
     }
+}
+
+int maj_process_table (processus_table* proc_table){
+    int status = -1;
+
+    for(int i=0; i<proc_table->length; i++){
+        waitpid(proc_table->table[i]->process_pid, &status, WNOHANG | WUNTRACED | WCONTINUED);
+        if(proc_table->table[i]->status == 2){
+           proc_table->table[i]->status =-2; //so that it won't print each time "... STOPPED" 
+        }
+        if(WIFEXITED(status)){ //end with exit or return
+            proc_table->table[i]->status = 5; //done
+        }
+        else if(WIFSIGNALED(status)){ //terminated with signal
+            proc_table->table[i]->status = 4; //killed
+        }
+        else if(WIFSTOPPED(status)){
+            proc_table->table[i]->status = 2; //stopped
+        }
+        else if(WIFCONTINUED(status)){
+            proc_table->table[i]->status = 1; //continue
+        }
+    }
+
+//potentiellement necessaire de tester avant si la val n'est pas la meme pour ne pas maj à chaque tour de boucle
+//waitpid en haut de la boucle et affichage en bas de la while(1)
+//systeme de -2 pour si il est arrété et que le message a déjà été affiché?
 }
 
 // int main (int argc, char** argv){
@@ -152,7 +182,7 @@ void print_test (processus_table* table){
 
 //     //free_processus(test1);
 //     //free_processus(test2);
-//     //free_processus(test3);
+//     //free_processus(tesàt3);
 
 //     return 1;
 // }

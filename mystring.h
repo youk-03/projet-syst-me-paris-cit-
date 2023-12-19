@@ -13,7 +13,7 @@ struct string {
 
 struct argument {
   char** data; //line returned by split
-  int nbr_arg; //number of words in data (size of the array)
+  int nbr_arg; //number of words in data (size of the array)  //NULL is not counted in nbr_arg
 };
 typedef struct string string;
 typedef struct argument argument;

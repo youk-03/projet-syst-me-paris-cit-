@@ -6,19 +6,20 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "mystring.h"
+#include "redirect.h"
+#include "prompt.h"
 #include <stdbool.h>
-#define PROMPT_CHAR_MAX 25
 
-char* truncate_to_size (char* path){
+char* truncate_to_size (char* path, int max_size){
    if(path == NULL){
       return NULL;
    }
-   char *res = malloc(PROMPT_CHAR_MAX+1); 
+   char *res = malloc(max_size+1); 
    if(!res){
       return NULL;
    }
    memmove(res,"...",3); 
-   memmove(res+3,path+(strlen(path)-(PROMPT_CHAR_MAX-3)),PROMPT_CHAR_MAX-2);
+   memmove(res+3,path+(strlen(path)-(max_size-3)),max_size-2);
    return res;
 } //need to free char* returned by fonc + if path == NULL return NULL
 //trunc path from left
@@ -27,31 +28,41 @@ char* create_prompt (char *path, int job_number){
 
 bool istrunc = false;
 size_t s_path = strlen(path);
-if(s_path > 25){
+int job_number_size = digit_number(job_number);
+int ic=0;
 
-   path = truncate_to_size(path);
+if(s_path > 26-job_number_size){
+
+   int max_size = 26-job_number_size;
+
+   path = truncate_to_size(path,max_size);
 
    if(path == NULL){
       goto error;
    }
-   s_path=25;
+   s_path=26-job_number_size;
    istrunc = true;
 
 }
-size_t length = 26+s_path+1; //26= size of needed char for everything other than path pas assez alloc ici
+size_t length = 25+job_number_size+s_path+1; //25= size of needed char for everything other than path and job_number
 
 char *res = malloc(length); 
 if(!res){
    goto error;
 }
-memmove(res,"\001\033[33m\002[",8);
-sprintf(res+8,"%d",job_number);
+ic = strlen("\001\033[33m\002[");
+memmove(res,"\001\033[33m\002[",ic);
+sprintf(res+ic,"%d",job_number);
+ic+=job_number_size;
 char *res2 = "]\001\033[35m\002"; 
-memmove(res+9,res2,8);
-memmove(res+17,path,s_path);
+memmove(res+ic,res2,strlen(res2));
+ic+= strlen(res2);
+memmove(res+ic,path,s_path);
+ic+=s_path;
 char *res3 = "\001\033[00m\002$ ";
-memmove(res+17+s_path, res3,9);
-memmove(res+17+s_path+9,"\0",1);
+memmove(res+ic, res3,strlen(res3));
+ic+=strlen(res3);
+memmove(res+ic,"\0",1);
 
 if(istrunc){ 
 if(path){
@@ -66,6 +77,27 @@ perror("malloc create_prompt");
 return NULL;
 } //need to free res*
 
+int digit_number (int number){
+   if(number == 0){
+      return 1;
+   }
+   int count= 0;
+   while(number != 0){
+      number/=10;
+      count++;
+   }
+   return count;
+}
+
+bool is_redirect(argument* arg){
+
+   for(int i=0; i<arg->nbr_arg; i++){
+      if(return_redirect(arg->data[i]) != -1) return true;
+   }
+
+   return false;
+}
+
 
 int get_command(argument* arg){
    if(arg == NULL){
@@ -79,6 +111,9 @@ int get_command(argument* arg){
    //2 -> pwd
    //3 -> cd
    //4 exec or invalid argument
+   //5 redirect
+   //6 jobs
+   //7 kill
    if(strcmp(command,"?") == 0){
       return 0;
    }
@@ -90,6 +125,18 @@ int get_command(argument* arg){
    }
    if(strcmp(command,"cd") == 0){
       return 3;
+   }
+
+   if(is_redirect(arg)){
+      return 5;
+   }
+
+   if(strcmp(command,"jobs") == 0){
+      return 6;
+   }
+
+     if(strcmp(command,"kill") == 0){
+      return 7;
    }
    return 4;
 

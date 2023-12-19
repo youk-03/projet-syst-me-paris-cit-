@@ -6,7 +6,7 @@
 
 
 
-int kill_cmd(char * arg1, char * arg2){
+int kill_cmd(char * arg1, char * arg2){ //option   pid
 
     char * string_jobnumber=NULL;
     char * string_signumber=NULL;
@@ -30,7 +30,6 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 } else {//example: kill -9 5312 sends SIGKILL (9) to process of pid 5312
 
     if(arg1[0]=='-'){
-
         string_signumber=malloc(strlen(arg1));
         if(string_signumber==NULL) {
             goto error ; 
