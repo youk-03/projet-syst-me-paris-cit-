@@ -4,9 +4,11 @@
 #include <signal.h>
 #include <string.h>
 
+#include "processus.h"
 
 
-int kill_cmd(char * arg1, char * arg2){
+
+int kill_cmd(char * arg1, char * arg2, processus_table * tab){
 
     char * string_jobnumber=NULL;
     char * string_signumber=NULL;
@@ -14,7 +16,7 @@ int kill_cmd(char * arg1, char * arg2){
 if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
     if (arg1[0]=='%'){
-        string_jobnumber=malloc(strlen(arg1)); //
+        string_jobnumber=calloc(strlen(arg1),'0'); 
         if(string_jobnumber==NULL) {
             perror("malloc");
             exit(1);
@@ -25,7 +27,18 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         //    goto error ;
         // }
 
-        // free(string_jobnumber);
+        for (int i=0; i<tab->length; i++){
+
+            if(tab->table[i]->id==atoi(string_jobnumber)){
+                int sig=kill(tab->table[i]->process_pid,SIGTERM); 
+                if(sig==-1){
+                    goto error ;
+                }
+    
+            }
+        }
+
+        free(string_jobnumber);
 
     } return 0;
     
