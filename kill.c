@@ -4,18 +4,22 @@
 #include <signal.h>
 #include <string.h>
 
+#include "processus.h"
 
 
-int kill_cmd(char * arg1, char * arg2){ //option   pid
+
+int kill_cmd(char * arg1, char * arg2, processus_table * tab){
 
     char * string_jobnumber=NULL;
     char * string_signumber=NULL;
 
 if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
+
     if (arg1[0]=='%'){
-        string_jobnumber=malloc(strlen(arg1)); //
+        string_jobnumber=calloc(strlen(arg1),'0'); 
         if(string_jobnumber==NULL) {
-            goto error ; 
+            perror("malloc");
+            exit(1);
         }
         memcpy(string_jobnumber,arg1+1,strlen(arg1)-1);
         // int sig=kill(atoi(string_jobnumber), SIGTERM); //this is not it, not functional for now
@@ -23,7 +27,18 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         //    goto error ;
         // }
 
-        // free(string_jobnumber);
+        for (int i=0; i<tab->length; i++){
+
+            if(tab->table[i]->id==atoi(string_jobnumber)){
+                int sig=kill(tab->table[i]->process_pid,SIGTERM); 
+                if(sig==-1){
+                    goto error ;
+                }
+    
+            }
+        }
+
+        free(string_jobnumber);
 
     } return 0;
     
@@ -31,9 +46,12 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
     if(arg1[0]=='-'){
         string_signumber=malloc(strlen(arg1));
+
         if(string_signumber==NULL) {
-            goto error ; 
+            perror("malloc");
+            exit(1);
         }
+        
         memmove(string_signumber,arg1+1,strlen(arg1));
         int sig=kill(atoi(arg2),atoi(string_signumber));
          if (sig==-1) {

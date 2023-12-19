@@ -59,9 +59,7 @@ int main (int argc, char *argv[]){
     maj_process_table(proc_table);
 
     if(!line_read){ //ctrl+D
-    //free table ! 
-    free_processus_table(proc_table);///////////////////////////////:
-        exit_jsh(last_return);
+        last_return = exit_jsh(last_return,proc_table);
     }
 
     add_history (line_read);
@@ -71,10 +69,10 @@ int main (int argc, char *argv[]){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
         if(arg->nbr_arg > 1){
-            exit_jsh(atoi(arg->data[1]));
+            last_return = exit_jsh(atoi(arg->data[1]),proc_table);
          }
         else{
-            exit_jsh(last_return);
+            last_return = exit_jsh(last_return,proc_table);
         } 
         break; 
         case 2: last_return = pwd(); break; //pwd
@@ -125,10 +123,10 @@ int main (int argc, char *argv[]){
         case 7: //kill
 
         if(arg->nbr_arg > 2){
-            last_return = kill_cmd(arg->data[1],arg->data[2]);
+            last_return = kill_cmd(arg->data[1],arg->data[2],proc_table);
         }
         else{
-            last_return = kill_cmd(arg->data[1],NULL);
+            last_return = kill_cmd(arg->data[1],NULL,proc_table);
         }
 
         break;
@@ -159,7 +157,7 @@ int main (int argc, char *argv[]){
   free_processus_table(proc_table);
 
   error:
-    exit_jsh(1);
+    exit_jsh(1,proc_table);
 
 
    

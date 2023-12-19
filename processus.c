@@ -141,10 +141,7 @@ int maj_process_table (processus_table* proc_table){
             proc_table->table[i]->status = 1; //continue
         }
     }
-
-//potentiellement necessaire de tester avant si la val n'est pas la meme pour ne pas maj à chaque tour de boucle
-//waitpid en haut de la boucle et affichage en bas de la while(1)
-//systeme de -2 pour si il est arrété et que le message a déjà été affiché?
+    return 0;
 }
 
 // int main (int argc, char** argv){
