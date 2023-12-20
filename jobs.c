@@ -7,7 +7,7 @@
 #include "jobs.h"
 
 
-void printJobs(processus * processus){
+void print_jobs(processus * processus){
 
     printf("[%d] %d ",processus->id, processus->process_pid);
     switch (processus->status)
@@ -44,26 +44,59 @@ void printJobs(processus * processus){
     exit(1);
 }
 
-void printTableOfJobs(processus_table * proc_table){
+void print_table_of_jobs(processus_table * proc_table){
 for (int i=0; i<proc_table->length; i++){
-    printJobs(proc_table->table[i]);
+    print_jobs(proc_table->table[i]);
 }
 }
 
+void print_table_of_certain_jobs(processus_table * proc_table, int number){
+    for (int i=0; i<proc_table->length; i++){
+        if(proc_table->table[i]->id==number){
+            print_jobs(proc_table->table[i]);
+        }
 
-int jobs(bool argument,processus_table * processus_table){
+    }
+    
+}
 
- if(processus_table == NULL){
+
+int jobs(bool option, char * arg, processus_table * processus_table){ // option = -t is present ; arg = job number (%2)
+
+char * string_jobnumber=NULL;
+
+if(processus_table == NULL){
     return 1;
- }   
+}   
  
-if(argument) {
+if(option) {
+
     printf("Not implemented yet ):");
 
     return 1;
 }
-else {
-    printTableOfJobs(processus_table);
+
+if (arg==NULL){
+    print_table_of_jobs(processus_table);
+    return 0;
+
+} else if (arg[0]=='%'){
+
+    string_jobnumber=calloc(strlen(arg),'0'); 
+    if(string_jobnumber==NULL) {
+        perror("malloc");
+        exit(1);
+    }
+    memcpy(string_jobnumber,arg+1,strlen(arg)-1);
+   
+   print_table_of_certain_jobs(processus_table,atoi(string_jobnumber));
+ 
+    free(string_jobnumber);
+    return 0;
+
+} else {
+    perror("jobs");
+   return 1 ;
 }
   fflush(NULL);
 
@@ -77,10 +110,10 @@ void maj_main_print(processus_table* proc_table){
     while(ic < proc_table->length){
         switch(proc_table->table[ic]->status){
             case 1: /*nothing to do*/ ic++; break; //running
-            case 2: printJobs(proc_table->table[ic]); ic++; break; //stopped
+            case 2: print_jobs(proc_table->table[ic]); ic++; break; //stopped
             case 3: /*nothing to do*/ic++;  break; //detached
-            case 4: printJobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //killed
-            case 5: printJobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //done
+            case 4: print_jobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //killed
+            case 5: print_jobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //done
             default: ic++; break;
         }
     }
