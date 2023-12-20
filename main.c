@@ -138,7 +138,13 @@ int main (int argc, char *argv[]){
 
         break;
 
-        case 6: last_return = jobs(false,proc_table); break; //jobs
+        case 6: 
+        if (strcmp(arg->data[1],"%")||strcmp(arg->data[1],"-t")) {
+            last_return = jobs(false,arg->data[1],proc_table);
+        } else {
+            last_return = jobs(false, NULL, proc_table);
+        }
+        break; //jobs
 
         case 7: //kill
 
