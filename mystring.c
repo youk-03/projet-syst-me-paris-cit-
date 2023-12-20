@@ -79,13 +79,14 @@ argument* split(const char* tosplit, char delim ){
   int words_it = 0;
   char** res= NULL;
 
-  size_t tosplit_l = strlen(tosplit);
    //variable
 
   if(tosplit == NULL){
     return NULL;
   }
    //Case where tosplit == NULL
+
+   size_t tosplit_l = strlen(tosplit);
 
    if(strcmp(tosplit,"")==0){
     return NULL;

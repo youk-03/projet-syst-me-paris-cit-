@@ -128,6 +128,9 @@ int maj_process_table (processus_table* proc_table){
         if(proc_table->table[i]->status == 2){
            proc_table->table[i]->status =-2; //so that it won't print each time "... STOPPED" 
         }
+        
+        if(status == -1) continue;
+
         if(WIFEXITED(status)){ //end with exit or return
             proc_table->table[i]->status = 5; //done
         }
@@ -140,6 +143,8 @@ int maj_process_table (processus_table* proc_table){
         else if(WIFCONTINUED(status)){
             proc_table->table[i]->status = 1; //continue
         }
+
+        status = -1;
     }
     return 0;
 }

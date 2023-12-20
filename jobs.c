@@ -10,34 +10,34 @@
 
 void print_jobs(processus * processus){
 
-    printf("[%d] %d ",processus->id, processus->process_pid);
+    dprintf(2,"[%d] %d ",processus->id, processus->process_pid);
     switch (processus->status)
     {
     case 1:
-        printf("Running");
+        dprintf(2,"Running");
         break;
     case 2:
-        printf("Stopped");
+        dprintf(2,"Stopped");
         break;
     case 3:
-        printf("Detached");
+        dprintf(2,"Detached");
         break;
     case 4:
-        printf("Killed");
+        dprintf(2,"Killed");
         break;
     case 5:
-        printf("Done");
+        dprintf(2,"Done");
         break;
 
     case -2:
-     printf("Stopped"); //(explained in processus.c line 129)
+     dprintf(2,"Stopped"); //(explained in processus.c line 129)
      break;    
 
     default:
         goto error;
         break;
     }
-    printf(" %s\n",processus->name);
+    dprintf(2," %s\n",processus->name);
     return;
 
     error: 

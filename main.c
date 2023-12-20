@@ -65,7 +65,7 @@ int main (int argc, char *argv[]){
     }
     line_read = readline(prompt);
 
-    maj_process_table(proc_table);
+/////////////////////////////////////////////////////////////
 
     if(!line_read){ //ctrl+D
         last_return = exit_jsh(last_return,proc_table);
@@ -121,6 +121,7 @@ int main (int argc, char *argv[]){
         if(is_background(arg)){
 
         pid = forkexecBackground(arg->data[0],arg->data); //forkexecBackground
+        line_read[strlen(line_read)-2] = '\0';
         proc = allocate_processus(pid,getpid(),1,line_read, id++);
 
         if(proc != NULL) {
@@ -143,7 +144,7 @@ int main (int argc, char *argv[]){
         break;
 
         case 6: 
-        if (strcmp(arg->data[1],"%")||strcmp(arg->data[1],"-t")) {
+        if (arg->nbr_arg > 1) {
             last_return = jobs(false,arg->data[1],proc_table);
         } else {
             last_return = jobs(false, NULL, proc_table);
@@ -164,6 +165,8 @@ int main (int argc, char *argv[]){
         default: break;
 
     }
+
+    maj_process_table(proc_table);
 
     maj_main_print(proc_table);
 
@@ -194,7 +197,7 @@ int main (int argc, char *argv[]){
     }
 }
 
-  free_processus_table(proc_table);
+  //free_processus_table(proc_table);
 
   error:
     exit_jsh(1,proc_table);

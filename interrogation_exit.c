@@ -22,7 +22,7 @@ int running_or_stopped (processus_table* proc_table){
             perror("processus null\n");
         } else {
             int p = proc->status;
-            if (p==1 || p==2){
+            if (p==1 || p==2 || p==-2){ //look where i explained it i don't remember
                 return 1;
             } 
         }
@@ -32,6 +32,7 @@ int running_or_stopped (processus_table* proc_table){
 }
 
 int exit_jsh (int val, processus_table* proc_table){
+
     if (running_or_stopped(proc_table)){
         fprintf(stderr,"Processus still in execution\n");
         fflush(NULL);
