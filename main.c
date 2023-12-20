@@ -123,7 +123,11 @@ int main (int argc, char *argv[]){
         pid = forkexecBackground(arg->data[0],arg->data); //forkexecBackground
         proc = allocate_processus(pid,getpid(),1,line_read, id++);
 
-        if(proc != NULL)  add_processus(proc,proc_table);
+        if(proc != NULL) {
+            add_processus(proc,proc_table);
+            print_jobs(proc);
+        } 
+
         
         else goto error;
         //creer proc ajouter a la table si pas erreur!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
