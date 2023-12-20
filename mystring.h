@@ -38,5 +38,7 @@ extern argument* split(const char* tosplit, char delim );
 //return NULL si tosplit == NULL
 
 extern void free_argument(argument* tofree);
+
+argument* cpy_argument (argument* arg, int end);
   
 #endif // MYSTRING_H

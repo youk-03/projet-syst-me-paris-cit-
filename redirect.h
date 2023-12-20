@@ -1,7 +1,7 @@
 #ifndef REDIRECT_H
 #define REDIRECT_H
 
-int redirect (argument* arg);
+argument* redirect (argument* arg);
 
 int return_redirect(char * string);
 

@@ -65,6 +65,7 @@ if(argument) {
 else {
     printTableOfJobs(processus_table);
 }
+  fflush(NULL);
 
 return 0;
 

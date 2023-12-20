@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <string.h>
 #include "mystring.h"
@@ -19,6 +20,13 @@
 #include <unistd.h>
 
 int main (int argc, char *argv[]){
+
+    //copy of stdin stdout and stderr
+    int stdout_ = dup(1);
+    int stdin_ = dup(0);
+    int stderr_ = dup(2);
+    //
+
     rl_outstream = stderr;
 
     using_history();
@@ -34,6 +42,7 @@ int main (int argc, char *argv[]){
     char *path = NULL;
     processus_table* proc_table = allocate_processus_table(5);
     processus* proc;
+    bool isredirect = false;
 
     //TODO : waitpid sur la table peut etre avoir un arg last status ? pour constater un changement
     //mettre a jour à chaque tour de boucle l'état des processus et appeler job si l'état d'un change
@@ -65,6 +74,19 @@ int main (int argc, char *argv[]){
     add_history (line_read);
 
     arg=split(line_read,' ');
+
+    //CASE WHERE REDIRECT TO CHANGE THE FD AND CREATE THE FILE
+    if(get_command(arg) == 5){
+        argument* tmp = redirect(arg);
+        if(tmp!=NULL){
+            free_argument(arg);
+            arg=tmp;       
+        }
+        else{
+            last_return = 1;
+        }
+        isredirect= true;
+    }
     switch(get_command(arg)){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
@@ -116,8 +138,6 @@ int main (int argc, char *argv[]){
 
         break;
 
-        case 5: last_return = redirect(arg); break; //redirect
-
         case 6: last_return = jobs(false,proc_table); break; //jobs
 
         case 7: //kill
@@ -136,6 +156,16 @@ int main (int argc, char *argv[]){
     }
 
     maj_main_print(proc_table);
+
+    if(isredirect){
+        
+    //putting back every fd to normal
+
+    dup2(stdout_,1); //////////////////
+    dup2(stdin_,0); /////////////:
+    dup2(stderr_,2); ////////////////////:
+    isredirect=false;
+    }
 
     if(arg != NULL){
       free_argument(arg);

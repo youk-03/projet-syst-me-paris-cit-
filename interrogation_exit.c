@@ -7,6 +7,7 @@
 
 int interrogation_point (int val){
     printf("%d\n", val);
+    fflush(NULL);
     return 0;
 }
 
@@ -33,6 +34,7 @@ int running_or_stopped (processus_table* proc_table){
 int exit_jsh (int val, processus_table* proc_table){
     if (running_or_stopped(proc_table)){
         fprintf(stderr,"Processus still in execution\n");
+        fflush(NULL);
         return 1;
     }
     free_processus_table(proc_table);

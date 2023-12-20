@@ -10,14 +10,11 @@
 #include "forkexec.h"
 #include "mystring.h"
 #include "redirect.h"
+#include "pwd.h"
 
-int redirect (argument* arg){
+argument* redirect (argument* arg){
 
     errno=0;
-
-    int stdout_ = dup(1);
-    int stdin_ = dup(0);
-    int stderr_ = dup(2);
 
     char* command = arg->data[0]; 
     int option = 0;
@@ -69,7 +66,7 @@ int redirect (argument* arg){
         fic = false;
 
         if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_EXCL|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_EXCL|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }   
@@ -85,7 +82,7 @@ int redirect (argument* arg){
         fic = false;
 
         if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_APPEND|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_APPEND|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }    
@@ -101,7 +98,7 @@ int redirect (argument* arg){
         fic = false;
 
          if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_TRUNC|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_TRUNC|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }    
@@ -117,7 +114,7 @@ int redirect (argument* arg){
         fic = false;
 
          if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_EXCL|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_EXCL|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }    
@@ -133,7 +130,7 @@ int redirect (argument* arg){
         fic = false;
 
              if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_APPEND|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_APPEND|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }    
@@ -149,7 +146,7 @@ int redirect (argument* arg){
         fic = false;
 
              if(it+1<arg->nbr_arg){
-            fd_fic = open(arg->data[it+1],O_CREAT|O_TRUNC|O_WRONLY, 0766); 
+            fd_fic = open(arg->data[it+1],O_CREAT|O_TRUNC|O_WRONLY, 0644); 
             if(fd_fic == -1){
                 goto error;
             }    
@@ -168,28 +165,27 @@ int redirect (argument* arg){
     it++;
 
     }
+///////////////////////////////////////////////////////////////////////////::
+    // argument* res = malloc(sizeof(argument)); //A FREE
+    // if(!res) goto error; /////////////////////////////////////////////////::
 
-    char** commands = malloc(sizeof(char*)*(option+2));
+    // char** commands = malloc(sizeof(char*)*(option+2)); //ICI AUSSI
+    // if(!commands) goto error; ///////////////////////////////////////////////
+    //    res->nbr_arg = option+1;
 
-    int i=0;
-    while(i<option+1){
-        commands[i] = arg->data[i];
-        i++;
-    }
+    // int i=0;
+    // while(i<option+1){
+    //     commands[i] = arg->data[i];
+    //     i++;
+    // }
 
-    commands[i] = NULL; //exec
+    // commands[i] = NULL; //exec
+    // res->data= commands;
 
-    int res = forkexec(arg->data[0],commands);
+    argument* res= cpy_argument(arg,option+1);
 
-    //putting back every fd to normal
+    return res;
 
-    dup2(stdout_,1);
-    dup2(stdin_,0);
-    dup2(stderr_,2);
-
-    free(commands);
-
-    return res;  
     error:
     if(errno != 0){
         perror("redirect");
@@ -199,11 +195,7 @@ int redirect (argument* arg){
      write(2, msg, strlen(msg));
     }
 
-    dup2(stdout_,1);
-    dup2(stdin_,0);
-    dup2(stderr_,2);
-
-    return 1;
+    return NULL;
 
 }
 

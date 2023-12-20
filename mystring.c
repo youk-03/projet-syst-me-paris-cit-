@@ -173,3 +173,53 @@ argument* split(const char* tosplit, char delim ){
   exit(1); //TODO : changer
 
 }
+
+argument* cpy_argument (argument* arg, int end){
+
+  argument* res = malloc(sizeof(argument));
+  if(!res) goto error;
+  //0 1 2 3 4 5 6 
+  res->nbr_arg = end;
+
+  res->data = malloc(sizeof(char*)*(res->nbr_arg+1));//exec
+  if(!res->data) goto error;
+  for(int i=0;i<res->nbr_arg; i++){
+
+    res->data[i] = malloc(strlen(arg->data[i])+1);
+    res->data[i] = strcpy(res->data[i], arg->data[i]);
+    if(!res->data[i]){
+      goto error;
+    }
+
+  }
+
+  res->data[res->nbr_arg] = NULL;
+
+  return res;
+
+  error:
+  perror("cpy_arg");
+  exit(1);
+}
+
+// int main(){
+
+//   char *read = "ls -l > ouh";
+//   argument* arg = split(read,' ');
+//   argument* arg2 = cpy_argument(arg,2);
+  
+//   for(int i=0; i<arg->nbr_arg; i++){
+//     printf("%s\n",arg->data[i]);
+//   }
+
+//   puts(" ");
+
+//   for(int i=0; i<arg2->nbr_arg; i++){
+//     printf("%s\n",arg2->data[i]);
+//   }
+
+//   free_argument(arg);
+//   free_argument(arg2);
+
+
+// }
