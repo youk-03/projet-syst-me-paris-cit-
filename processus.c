@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <unistd.h>
 //processus_table
 
 
@@ -105,6 +107,8 @@ processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, 
     if(!res->name) goto error;
     res->id = id;
 
+    setpgid(process_pid,0);///////////////////////////////////////////////////////:
+
     return res;
 
     error:
@@ -122,14 +126,26 @@ void print_test (processus_table* table){
 
 int maj_process_table (processus_table* proc_table){
     int status = -1;
+    int wait = -1;
 
     for(int i=0; i<proc_table->length; i++){
-        waitpid(proc_table->table[i]->process_pid, &status, WNOHANG | WUNTRACED | WCONTINUED);
-        if(proc_table->table[i]->status == 2){
+       wait =  waitpid(proc_table->table[i]->process_pid, &status, WNOHANG | WUNTRACED | WCONTINUED);
+       if(wait == 0){
+          if(proc_table->table[i]->status == 2){
            proc_table->table[i]->status =-2; //so that it won't print each time "... STOPPED" 
         }
+        continue;
+       }
+       if(wait == -1){
+         if(errno == ECHILD){
+            proc_table->table[i]->status = 5; // 4 ?
         
-        if(status == -1) continue;
+        }
+    else goto error;
+       }
+
+       else{
+        
 
         if(WIFEXITED(status)){ //end with exit or return
             proc_table->table[i]->status = 5; //done
@@ -144,9 +160,14 @@ int maj_process_table (processus_table* proc_table){
             proc_table->table[i]->status = 1; //continue
         }
 
-        status = -1;
+       }
     }
     return 0;
+
+    error:
+   
+    perror("maj_process_table");
+    return 1;
 }
 
 // int main (int argc, char** argv){
