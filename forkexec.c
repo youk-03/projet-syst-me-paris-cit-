@@ -5,15 +5,19 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include "forkexec.h"
 #include "interrogation_exit.h"
 #include "mystring.h"
+#include "processus.h"
+#include "jobs.h"
 
 
 
-int forkexec(char * file_name, char ** arguments){
+int forkexec(char * file_name, char ** arguments, processus_table* proc_table){
     int process_id=fork();
     int status;
+    int wait = -1;
     if (process_id==-1){
         perror("forkexec: fork");
         exit (1);
@@ -24,8 +28,34 @@ int forkexec(char * file_name, char ** arguments){
         perror("forkexec: Incorrect command :");
         exit(1); //TODO : changer
     } else {
-        waitpid(process_id,&status,WUNTRACED | WCONTINUED);
-        return WEXITSTATUS(status) ;
+       wait = waitpid(process_id,&status,WUNTRACED);
+       if(wait == -1){
+        perror("forkexec");
+        return 1;
+       }
+       if(wait > 0) {
+        if(WIFSIGNALED(status)){
+
+            processus* proc = allocate_processus(process_id,getppid(), 4, file_name);
+            print_jobs(proc,2);
+            free_processus(proc);
+
+            return 1;
+
+        }
+        else if (WIFSTOPPED(status)){
+
+            processus* proc = allocate_processus(process_id,getppid(), -2, file_name);
+            add_processus(proc, proc_table);
+            print_jobs(proc,2);
+
+            return 1;
+
+        }
+        else if(WIFEXITED(status)){
+        return WEXITSTATUS(status);
+        }
+       }
     }
 }
 

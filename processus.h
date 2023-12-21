@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+
 struct processus {
   pid_t process_pid;
   pid_t father_pid; //?? utile
@@ -38,7 +39,7 @@ int maj_process_table (processus_table* proc_table);
 
 void free_processus (processus* proc);
 
-processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, char* name, int id);
+processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, char* name);
 
 
 #endif

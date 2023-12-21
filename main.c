@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+
 int main (int argc, char *argv[]){
 
     //copy of stdin stdout and stderr
@@ -32,7 +33,6 @@ int main (int argc, char *argv[]){
     using_history();
 
 
-    static int id = 1;
     static int last_return = 0;
     static int job_number = 0;
     int pid = -1;
@@ -51,8 +51,10 @@ int main (int argc, char *argv[]){
 
     while(1){
 
+    maj_process_table(proc_table);
+
     job_number= proc_table->length;
-    if(job_number == 0) id = 1; //to not have like a hundred id even when there is no more job
+    //if(job_number == 0) id = 1; //to not have like a hundred id even when there is no more job
     errno = 0;
     path = getcwd(NULL,0); 
     if(path == NULL){
@@ -63,6 +65,11 @@ int main (int argc, char *argv[]){
     if(path == NULL){
         goto error;
     }
+
+    
+   // maj_process_table(proc_table);
+
+
     line_read = readline(prompt);
 
 /////////////////////////////////////////////////////////////
@@ -122,14 +129,16 @@ int main (int argc, char *argv[]){
 
         pid = forkexecBackground(arg->data[0],arg->data); //forkexecBackground
         line_read[strlen(line_read)-2] = '\0';
-        proc = allocate_processus(pid,getpid(),1,line_read, id++);
+        proc = allocate_processus(pid,getpid(),1,line_read/*,id++*/);
 
         if(proc != NULL) {
-            add_processus(proc,proc_table);
-            print_jobs(proc);
-        } 
 
-        
+            if(setpgid(pid,0) != 0){
+                perror("main l.132");
+                }// verifier que succes
+            add_processus(proc,proc_table);
+            print_jobs(proc,2); //.... running ...
+        } 
         else goto error;
         //creer proc ajouter a la table si pas erreur!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -137,7 +146,7 @@ int main (int argc, char *argv[]){
 
         else{
         
-        last_return = forkexec(arg->data[0],arg->data);  //forkexec
+        last_return = forkexec(arg->data[0],arg->data,proc_table);  //forkexec
 
         }
 
@@ -166,9 +175,8 @@ int main (int argc, char *argv[]){
 
     }
 
-    maj_process_table(proc_table);
 
-    maj_main_print(proc_table);
+    //maj_main_print(proc_table);
 
     if(isredirect){
         

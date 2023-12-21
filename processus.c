@@ -1,4 +1,5 @@
 #include "processus.h"
+#include "jobs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -10,6 +11,8 @@
 #include <errno.h>
 #include <unistd.h>
 //processus_table
+
+static int id = 1;
 
 
 processus_table* allocate_processus_table(size_t capacity){
@@ -41,6 +44,7 @@ void free_processus_table(processus_table* table){
 }
 
 void add_processus (processus* processus, processus_table* table ){
+
     if(table->capacity == table->length){
         table->capacity = table->capacity*2;
         table->table = realloc(table->table, sizeof(processus)*table->capacity);
@@ -53,9 +57,10 @@ void add_processus (processus* processus, processus_table* table ){
     table->table[table->length] = processus; 
     table->length++;
 
-    error:
+    return;
 
-    //exit_jsh();
+    error:
+    exit(1);
 
 }
 
@@ -76,6 +81,9 @@ int delete_processus (processus* processus, processus_table* table){
     if(deleted){
         memmove(table->table+i,table->table+i+1,(table->length-i-1)*sizeof(processus));
         table->length--;
+          if(table->length == 0){
+        id = 1;
+    }
     }
     else{
         return -1;
@@ -94,7 +102,7 @@ void free_processus (processus* proc){
     proc=NULL;
 }
 
-processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, char* name, int id){
+processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, char* name){
     processus* res = malloc(sizeof(processus));
     
     if(!res) goto error;
@@ -106,8 +114,8 @@ processus* allocate_processus (pid_t process_pid, pid_t father_pid, int status, 
     res->name = strcpy(res->name,name);
     if(!res->name) goto error;
     res->id = id;
+    id++;
 
-    setpgid(process_pid,0);///////////////////////////////////////////////////////:
 
     return res;
 
@@ -158,10 +166,12 @@ int maj_process_table (processus_table* proc_table){
         }
         else if(WIFCONTINUED(status)){
             proc_table->table[i]->status = 1; //continue
+            print_jobs(proc_table->table[i],2);
         }
 
        }
     }
+    maj_main_print(proc_table);
     return 0;
 
     error:

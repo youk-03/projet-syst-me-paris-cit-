@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 #include "mystring.h"
+#include "processus.h"
 
-int forkexec(char *, char **); 
+int forkexec(char *, char **, processus_table*); 
 
 int forkexecBackground( char *, char **);
 

@@ -8,25 +8,25 @@
 #include "jobs.h"
 
 
-void print_jobs(processus * processus){
+void print_jobs(processus * processus, int fd){ //fd is 1 or 2
 
-    dprintf(2,"[%d] %d ",processus->id, processus->process_pid);
+    dprintf(fd,"[%d] %d ",processus->id, processus->process_pid);
     switch (processus->status)
     {
     case 1:
-        dprintf(2,"Running");
+        dprintf(fd,"Running");
         break;
     case 2:
-        dprintf(2,"Stopped");
+        dprintf(fd,"Stopped");
         break;
     case 3:
-        dprintf(2,"Detached");
+        dprintf(fd,"Detached");
         break;
     case 4:
-        dprintf(2,"Killed");
+        dprintf(fd,"Killed");
         break;
     case 5:
-        dprintf(2,"Done");
+        dprintf(fd,"Done");
         break;
 
     case -2:
@@ -47,14 +47,14 @@ void print_jobs(processus * processus){
 
 void print_table_of_jobs(processus_table * proc_table){
 for (int i=0; i<proc_table->length; i++){
-    print_jobs(proc_table->table[i]);
+    print_jobs(proc_table->table[i],1);
 }
 }
 
 void print_table_of_certain_jobs(processus_table * proc_table, int number){
     for (int i=0; i<proc_table->length; i++){
         if(proc_table->table[i]->id==number){
-            print_jobs(proc_table->table[i]);
+            print_jobs(proc_table->table[i],1);
         }
 
     }
@@ -111,10 +111,10 @@ void maj_main_print(processus_table* proc_table){
     while(ic < proc_table->length){
         switch(proc_table->table[ic]->status){
             case 1: /*nothing to do*/ ic++; break; //running
-            case 2: print_jobs(proc_table->table[ic]); ic++; break; //stopped
+            case 2: print_jobs(proc_table->table[ic],2); ic++; break; //stopped
             case 3: /*nothing to do*/ic++;  break; //detached
-            case 4: print_jobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //killed
-            case 5: print_jobs(proc_table->table[ic]); delete_processus(proc_table->table[ic], proc_table); break; //done
+            case 4: print_jobs(proc_table->table[ic],2); delete_processus(proc_table->table[ic], proc_table); break; //killed
+            case 5: print_jobs(proc_table->table[ic],2); delete_processus(proc_table->table[ic], proc_table); break; //done
             default: ic++; break;
         }
     }
