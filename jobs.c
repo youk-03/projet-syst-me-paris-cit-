@@ -105,16 +105,20 @@ return 0;
 
 }
 
-void maj_main_print(processus_table* proc_table){
+void maj_main_print(processus_table* proc_table, bool stdout){
     int ic = 0;
+    int fd=2;
+    if(stdout){
+        fd=1;
+    }
 
     while(ic < proc_table->length){
         switch(proc_table->table[ic]->status){
             case 1: /*nothing to do*/ ic++; break; //running
-            case 2: print_jobs(proc_table->table[ic],2); ic++; break; //stopped
+            case 2: print_jobs(proc_table->table[ic],fd); ic++; break; //stopped
             case 3: /*nothing to do*/ic++;  break; //detached
-            case 4: print_jobs(proc_table->table[ic],2); delete_processus(proc_table->table[ic], proc_table); break; //killed
-            case 5: print_jobs(proc_table->table[ic],2); delete_processus(proc_table->table[ic], proc_table); break; //done
+            case 4: print_jobs(proc_table->table[ic],fd); delete_processus(proc_table->table[ic], proc_table); break; //killed
+            case 5: print_jobs(proc_table->table[ic],fd); delete_processus(proc_table->table[ic], proc_table); break; //done
             default: ic++; break;
         }
     }

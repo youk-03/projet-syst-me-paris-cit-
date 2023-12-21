@@ -51,7 +51,7 @@ int main (int argc, char *argv[]){
 
     while(1){
 
-    maj_process_table(proc_table);
+    maj_process_table(proc_table,false);
 
     job_number= proc_table->length;
     //if(job_number == 0) id = 1; //to not have like a hundred id even when there is no more job
@@ -153,6 +153,7 @@ int main (int argc, char *argv[]){
         break;
 
         case 6: 
+        maj_process_table(proc_table,true);
         if (arg->nbr_arg > 1) {
             last_return = jobs(false,arg->data[1],proc_table);
         } else {

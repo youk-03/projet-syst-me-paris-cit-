@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 
 struct processus {
@@ -33,7 +34,7 @@ void add_processus (processus* processus, processus_table* table );
 
 int delete_processus (processus* processus, processus_table* table);
 
-int maj_process_table (processus_table* proc_table);
+int maj_process_table (processus_table* proc_table, bool stdout);
 
 //processus
 

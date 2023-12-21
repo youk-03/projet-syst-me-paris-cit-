@@ -132,7 +132,7 @@ void print_test (processus_table* table){
     }
 }
 
-int maj_process_table (processus_table* proc_table){
+int maj_process_table (processus_table* proc_table, bool stdout){
     int status = -1;
     int wait = -1;
 
@@ -171,7 +171,7 @@ int maj_process_table (processus_table* proc_table){
 
        }
     }
-    maj_main_print(proc_table);
+    maj_main_print(proc_table, stdout);
     return 0;
 
     error:
