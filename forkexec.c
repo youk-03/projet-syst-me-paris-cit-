@@ -24,7 +24,7 @@ int forkexec(char * file_name, char ** arguments){
         perror("forkexec: Incorrect command :");
         exit(1); //TODO : changer
     } else {
-        waitpid(process_id,&status,0);
+        waitpid(process_id,&status,WUNTRACED | WCONTINUED);
         return WEXITSTATUS(status) ;
     }
 }
