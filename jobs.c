@@ -30,14 +30,14 @@ void print_jobs(processus * processus, int fd){ //fd is 1 or 2
         break;
 
     case -2:
-     dprintf(2,"Stopped"); //(explained in processus.c line 129)
+     dprintf(fd,"Stopped"); //(explained in processus.c line 129)
      break;    
 
     default:
         goto error;
         break;
     }
-    dprintf(2," %s\n",processus->name);
+    dprintf(fd," %s\n",processus->name);
     return;
 
     error: 
@@ -78,7 +78,7 @@ if(option) {
 }
 
 if (arg==NULL){
-    print_table_of_jobs(processus_table);
+    print_table_of_jobs(processus_table);//
     return 0;
 
 } else if (arg[0]=='%'){
