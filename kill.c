@@ -4,11 +4,11 @@
 #include <signal.h>
 #include <string.h>
 
-#include "processus.h"
+#include "job.h"
 
 
 //%2   //-4  //arg2 -> NULL sauf si pid
-int kill_cmd(char * arg1, char * arg2, processus_table * tab){
+int kill_cmd(char * arg1, char * arg2, job_table * tab){
 
     char * string_jobnumber=NULL;
     char * string_signumber=NULL;
@@ -33,7 +33,7 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         for (int i=0; i<tab->length; i++){
 
             if(tab->table[i]->id==atoi(string_jobnumber)){
-                int sig=kill(-tab->table[i]->process_pid,SIGTERM); /////////////:
+                int sig=kill(-tab->table[i]->job_pid,SIGTERM); 
                 if(sig==-1){
                     goto error ;
                 }
@@ -51,19 +51,19 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
 
 
- else {//example: kill -9 5312 sends SIGKILL (9) to process of pid 5312
+ else {//example: kill -9 5312 sends SIGKILL (9) to job of pid 5312
 
 
     if(arg1[0]=='-'){
 
         if(arg2[0] == '%'){
 
-        string_jobnumber=calloc(strlen(arg2),'0');  ////////////////////////////////////////
+        string_jobnumber=malloc(strlen(arg2));  
         if(string_jobnumber==NULL) {
             perror("malloc");
             exit(1);
         }
-        memcpy(string_jobnumber,arg2+1,strlen(arg2)-1); ////////////////////////////////////////
+        memcpy(string_jobnumber,arg2+1,strlen(arg2)); 
 
         //copy job number 
 
@@ -82,7 +82,7 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         for (int i=0; i<tab->length; i++){
 
             if(tab->table[i]->id==atoi(string_jobnumber)){
-                int sig=kill(-tab->table[i]->process_pid,atoi(string_signumber)); ////////////////////
+                int sig=kill(-tab->table[i]->job_pid,atoi(string_signumber)); 
                 if(sig==-1){
                     goto error ;
                 }
@@ -126,8 +126,3 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
     return 1;
     }
 }
-
-
-// int main(){
-// kill_cmd("-9","28214"); //-9 sigkill, -19 sigstop, -18 sigcont (useful for tests)
-// }

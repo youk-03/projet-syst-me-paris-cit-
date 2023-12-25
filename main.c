@@ -7,12 +7,12 @@
 #include "cd.h"
 #include "pwd.h"
 #include "prompt.h"
-#include "processus.h"
+#include "job.h"
 #include "interrogation_exit.h"
 #include "forkexec.h"
 #include "kill.h"
 #include "redirect.h"
-#include "jobs.h"
+#include "jobs_command.h"
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <unistd.h>
@@ -40,21 +40,16 @@ int main (int argc, char *argv[]){
     char* prompt= NULL;
     argument *arg = NULL;
     char *path = NULL;
-    processus_table* proc_table = allocate_processus_table(5);
-    processus* proc;
+    job_table* job_table = allocate_job_table(5);
+    job* job;
     bool isredirect = false;
-
-    //TODO : waitpid sur la table peut etre avoir un arg last status ? pour constater un changement
-    //mettre a jour à chaque tour de boucle l'état des processus et appeler job si l'état d'un change
-    //regarder dans man wait pour les fonc avec &status
 
 
     while(1){
 
-    maj_process_table(proc_table,false);
+    maj_job_table(job_table,false);
 
-    job_number= proc_table->length;
-    //if(job_number == 0) id = 1; //to not have like a hundred id even when there is no more job
+    job_number= job_table->length;
     errno = 0;
     path = getcwd(NULL,0); 
     if(path == NULL){
@@ -67,7 +62,6 @@ int main (int argc, char *argv[]){
     }
 
     
-   // maj_process_table(proc_table);
 
 
     line_read = readline(prompt);
@@ -75,7 +69,7 @@ int main (int argc, char *argv[]){
 /////////////////////////////////////////////////////////////
 
     if(!line_read){ //ctrl+D
-        last_return = exit_jsh(last_return,proc_table);
+        last_return = exit_jsh(last_return,job_table);
     }
 
     add_history (line_read);
@@ -98,10 +92,10 @@ int main (int argc, char *argv[]){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
         if(arg->nbr_arg > 1){
-            last_return = exit_jsh(atoi(arg->data[1]),proc_table);
+            last_return = exit_jsh(atoi(arg->data[1]),job_table);
          }
         else{
-            last_return = exit_jsh(last_return,proc_table);
+            last_return = exit_jsh(last_return,job_table);
         } 
         break; 
         case 2: last_return = pwd(); break; //pwd
@@ -129,45 +123,44 @@ int main (int argc, char *argv[]){
 
         pid = forkexecBackground(arg->data[0],arg->data); //forkexecBackground
         line_read[strlen(line_read)-2] = '\0';
-        proc = allocate_processus(pid,getpid(),1,line_read/*,id++*/);
+        job = allocate_job(pid,getpid(),1,line_read);
 
-        if(proc != NULL) {
+        if(job != NULL) {
 
             if(setpgid(pid,0) != 0){
-                perror("main l.132");
-                }// verifier que succes
-            add_processus(proc,proc_table);
-            print_jobs(proc,2); //.... running ...
+                perror("main l.131");
+                }// verifier que succes/////////////////////////////::
+            add_job(job,job_table);
+            print_jobs(job,2); //.... running ...
         } 
         else goto error;
-        //creer proc ajouter a la table si pas erreur!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         }
 
         else{
         
-        last_return = forkexec(arg->data[0],arg->data,proc_table);  //forkexec
+        last_return = forkexec(arg->data[0],arg->data,job_table);  //forkexec
 
         }
 
         break;
 
         case 6: 
-        maj_process_table(proc_table,true);
+        maj_job_table(job_table,true);
         if (arg->nbr_arg > 1) {
-            last_return = jobs(false,arg->data[1],proc_table);
+            last_return = jobs(false,arg->data[1],job_table);
         } else {
-            last_return = jobs(false, NULL, proc_table);
+            last_return = jobs(false, NULL, job_table);
         }
         break; //jobs
 
         case 7: //kill
 
         if(arg->nbr_arg > 2){
-            last_return = kill_cmd(arg->data[1],arg->data[2],proc_table);
+            last_return = kill_cmd(arg->data[1],arg->data[2],job_table);
         }
         else{
-            last_return = kill_cmd(arg->data[1],NULL,proc_table);
+            last_return = kill_cmd(arg->data[1],NULL,job_table);
         }
 
         break;
@@ -176,16 +169,13 @@ int main (int argc, char *argv[]){
 
     }
 
-
-    //maj_main_print(proc_table);
-
     if(isredirect){
         
     //putting back every fd to normal
 
-    dup2(stdout_,1); //////////////////
-    dup2(stdin_,0); /////////////:
-    dup2(stderr_,2); ////////////////////:
+    dup2(stdout_,1); 
+    dup2(stdin_,0); 
+    dup2(stderr_,2); 
     isredirect=false;
     }
 
@@ -206,10 +196,9 @@ int main (int argc, char *argv[]){
     }
 }
 
-  //free_processus_table(proc_table);
 
   error:
-    exit_jsh(1,proc_table);
+    exit_jsh(1,job_table);
 
 
    

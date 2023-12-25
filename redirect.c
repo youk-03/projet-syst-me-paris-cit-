@@ -165,22 +165,6 @@ argument* redirect (argument* arg){
     it++;
 
     }
-///////////////////////////////////////////////////////////////////////////::
-    // argument* res = malloc(sizeof(argument)); //A FREE
-    // if(!res) goto error; /////////////////////////////////////////////////::
-
-    // char** commands = malloc(sizeof(char*)*(option+2)); //ICI AUSSI
-    // if(!commands) goto error; ///////////////////////////////////////////////
-    //    res->nbr_arg = option+1;
-
-    // int i=0;
-    // while(i<option+1){
-    //     commands[i] = arg->data[i];
-    //     i++;
-    // }
-
-    // commands[i] = NULL; //exec
-    // res->data= commands;
 
     argument* res= cpy_argument(arg,option+1);
 

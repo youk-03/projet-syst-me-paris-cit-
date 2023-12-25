@@ -9,12 +9,14 @@
 #include "forkexec.h"
 #include "interrogation_exit.h"
 #include "mystring.h"
-#include "processus.h"
-#include "jobs.h"
+#include "job.h"
+#include "jobs_command.h"
+
+//tenter de mettre le setpgid ici MARCHE PAS 
 
 
 
-int forkexec(char * file_name, char ** arguments, processus_table* proc_table){
+int forkexec(char * file_name, char ** arguments, job_table* job_table){
     int process_id=fork();
     int status;
     int wait = -1;
@@ -36,18 +38,18 @@ int forkexec(char * file_name, char ** arguments, processus_table* proc_table){
        if(wait > 0) {
         if(WIFSIGNALED(status)){
 
-            processus* proc = allocate_processus(process_id,getppid(), 4, file_name);
-            print_jobs(proc,2);
-            free_processus(proc);
+            job* job = allocate_job(process_id,getppid(), 4, file_name); 
+            print_jobs(job,2);
+            free_job(job);
 
             return 1;
 
         }
         else if (WIFSTOPPED(status)){
 
-            processus* proc = allocate_processus(process_id,getppid(), -2, file_name);
-            add_processus(proc, proc_table);
-            print_jobs(proc,2);
+            job* job = allocate_job(process_id,getppid(), -2, file_name);
+            add_job(job, job_table);
+            print_jobs(job,2);
 
             return 1;
 

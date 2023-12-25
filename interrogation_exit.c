@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "processus.h"
+#include "job.h"
 #include "interrogation_exit.h"
 
 
@@ -11,18 +11,18 @@ int interrogation_point (int val){
     return 0;
 }
 
-int running_or_stopped (processus_table* proc_table){
-    if (proc_table == NULL){
-        perror("table de processus nulle\n");
+int running_or_stopped (job_table* job_table){
+    if (job_table == NULL){
+        perror("table de job nulle\n");
         return 0;
     }
-    for (int i=0; i<proc_table->length; i++){
-        processus * proc = proc_table->table[i] ;
-        if (proc == NULL){
-            perror("processus null\n");
+    for (int i=0; i<job_table->length; i++){
+        job * job = job_table->table[i] ;
+        if (job == NULL){
+            perror("job null\n");
         } else {
-            int p = proc->status;
-            if (p==1 || p==2 || p==-2){ //look where i explained it i don't remember
+            int p = job->status;
+            if (p==1 || p==2 || p==-2){ //job.c l.129
                 return 1;
             } 
         }
@@ -31,13 +31,13 @@ int running_or_stopped (processus_table* proc_table){
     return 0;
 }
 
-int exit_jsh (int val, processus_table* proc_table){
+int exit_jsh (int val, job_table* job_table){
 
-    if (running_or_stopped(proc_table)){
+    if (running_or_stopped(job_table)){
         fprintf(stderr,"Processus still in execution\n");
         fflush(NULL);
         return 1;
     }
-    free_processus_table(proc_table);
+    free_job_table(job_table);
     exit(val);
 }
