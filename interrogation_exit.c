@@ -32,6 +32,9 @@ int running_or_stopped (job_table* job_table){
 }
 
 int exit_jsh (int val, job_table* job_table){
+    if(job_table == NULL){
+        exit(val);
+    }
 
     if (running_or_stopped(job_table)){
         fprintf(stderr,"Processus still in execution\n");

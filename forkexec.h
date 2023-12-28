@@ -11,4 +11,6 @@ int forkexecBackground( char *, char **);
 
 bool is_background(argument* arg);
 
+void reset_signal();
+
 #endif

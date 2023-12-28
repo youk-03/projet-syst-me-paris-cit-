@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -12,7 +13,19 @@
 #include "job.h"
 #include "jobs_command.h"
 
-//tenter de mettre le setpgid ici MARCHE PAS 
+void reset_signal(){
+    struct sigaction action = {0};
+    action.sa_handler = SIG_DFL;
+    int signal_to_dfl[] = {SIGINT,SIGTERM,SIGTTIN,SIGQUIT,SIGTTOU,SIGTSTP};
+
+    for(int i=0; i<6; i++){
+        if(sigaction(signal_to_dfl[i], &action, NULL) == -1){
+            perror("sigaction");
+            exit_jsh(1,NULL);
+        }
+    }
+}
+
 
 
 
@@ -26,6 +39,11 @@ int forkexec(char * file_name, char ** arguments, job_table* job_table){
     }
     if (process_id==0){
         errno=0;
+        reset_signal();
+        if(setpgid(getpid(),getpid()) != 0){
+                perror("forkexec l.30");
+                }
+                //mettre 0 signal
         execvp(file_name,arguments);
         perror("forkexec: Incorrect command :");
         exit(1); //TODO : changer
@@ -69,7 +87,13 @@ int forkexecBackground( char * file_name, char ** arguments){
         exit (1);
     }
     if (process_id==0){
+                        
         errno=0;
+         reset_signal();
+         if(setpgid(getpid(),getpid()) != 0){
+                perror("forkexec l.30");
+                }
+
         execvp(file_name,arguments);
         perror("forkexecBackground : Incorrect command :");
         exit(1); //TODO: changer

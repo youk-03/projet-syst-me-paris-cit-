@@ -114,6 +114,8 @@ int get_command(argument* arg){
    //5 redirect
    //6 jobs
    //7 kill
+   //8 bg
+   //9 fg
    if(is_redirect(arg)){
       return 5;
    }
@@ -138,6 +140,14 @@ int get_command(argument* arg){
 
      if(strcmp(command,"kill") == 0){
       return 7;
+   }
+
+   if(strcmp(command,"bg") == 0){
+      return 8;
+   }
+
+   if(strcmp(command,"fg") == 0){
+      return 9;
    }
    return 4;
 
