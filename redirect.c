@@ -211,6 +211,14 @@ int return_redirect(char * string){
     return -1;
 }
 
+/*argument* pipe (){
+    - renvoie un argument ?
+    fonction récursive ou boucle ? 
+    fork : comment on gère tous les processus et fait un sorte que chacun finisse ?
+    Quand on execute une commande -> il faut passer par le main ?
+    En plus des redirections, mettre les appels à forkexec dans une fonction
+}*/
+
 // int main (int argc, char** argv){
 
 //     //>|     
