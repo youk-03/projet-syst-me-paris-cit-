@@ -211,7 +211,31 @@ int return_redirect(char * string){
     return -1;
 }
 
-/*argument* pipe (){
+/*argument* pipe (arg, suite){
+    int fd[2] = {-1,-1};
+    if(pipe(fd)!=0){
+        // erreur
+    }
+
+    process_id = fork
+    if (process_id == -1){
+        close(fd[0]);
+        close(fd[1]);
+        perror
+    } if (process_id == 0) {
+        close(fd[0]);
+        dup2(fd[1],1);
+        return arg
+    } else {
+        close(fd[1]);
+        dup2(fd[0],0);
+        waitpid(process_id);
+        redirect(suite);
+    }
+
+
+
+
     - renvoie un argument ?
     fonction récursive ou boucle ? 
     fork : comment on gère tous les processus et fait un sorte que chacun finisse ?
