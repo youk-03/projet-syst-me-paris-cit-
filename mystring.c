@@ -203,6 +203,34 @@ argument* cpy_argument (argument* arg, int end){
   exit(1);
 }
 
+argument* cpy_argument_end (argument* arg, int start){
+
+  argument* res = malloc(sizeof(argument));
+  if(!res) goto error;
+
+  res->nbr_arg = arg->nbr_arg - start;
+
+  res->data = malloc(sizeof(char*)*(res->nbr_arg+1));//exec
+  if(!res->data) goto error;
+  for(int i=0;i<res->nbr_arg; i++){
+
+    res->data[i] = malloc(strlen(arg->data[i+start])+1);
+    res->data[i] = strcpy(res->data[i], arg->data[i+start]);
+    if(!res->data[i]){
+      goto error;
+    }
+
+  }
+
+  res->data[res->nbr_arg] = NULL;
+
+  return res;
+
+  error:
+  perror("cpy_arg");
+  exit(1);
+}
+
 // int main(){
 
 //   char *read = "ls -l > ouh";
