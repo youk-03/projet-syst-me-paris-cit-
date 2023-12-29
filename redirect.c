@@ -157,6 +157,15 @@ argument* redirect (argument* arg){
             goto error; 
         }
         break;
+
+    case 7: // |
+        /*
+        appel à pipe
+
+        pipe (cpy_argument(arg,option+1))
+        
+        */
+        break;
     default: if(fic) {goto error;} fic=true; break; 
 
 
@@ -192,6 +201,7 @@ int return_redirect(char * string){
     // 2> 4
     // 2>> 5
     // 2>| 6
+    // | 7
     // -1
 
     if(strcmp(string, "<") == 0) return 0;
@@ -208,10 +218,12 @@ int return_redirect(char * string){
 
     if(strcmp(string, "2>|") == 0) return 6;
 
+    if(strcmp(string, "|") == 0) return 7;
+
     return -1;
 }
 
-/*argument* pipe (arg, suite){
+/*argument* pipe (argument* arg, argument* rest ){
     int fd[2] = {-1,-1};
     if(pipe(fd)!=0){
         // erreur
@@ -233,8 +245,7 @@ int return_redirect(char * string){
         redirect(suite);
     }
 
-
-
+    réfléchir au cas ou la pipeline est terminée
 
     - renvoie un argument ?
     fonction récursive ou boucle ? 
