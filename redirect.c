@@ -159,12 +159,7 @@ argument* redirect (argument* arg){
         break;
 
     case 7: // |
-        /*
-        appel à pipe
-
-        pipe (cpy_argument(arg,option+1))
-        
-        */
+        return pipe_redirect(cpy_argument(arg,option+1), cpy_argument_end(arg, option+2));
         break;
     default: if(fic) {goto error;} fic=true; break; 
 
@@ -223,36 +218,55 @@ int return_redirect(char * string){
     return -1;
 }
 
-/*argument* pipe (argument* arg, argument* rest ){
+argument* pipe_redirect (argument* arg, argument* rest ){
     int fd[2] = {-1,-1};
     if(pipe(fd)!=0){
-        // erreur
+        goto error;
     }
 
-    process_id = fork
+    int process_id = fork();
     if (process_id == -1){
         close(fd[0]);
         close(fd[1]);
-        perror
+        goto error;
     } if (process_id == 0) {
         close(fd[0]);
         dup2(fd[1],1);
-        return arg
+        return arg;
     } else {
         close(fd[1]);
         dup2(fd[0],0);
-        waitpid(process_id);
-        redirect(suite);
+        waitpid(process_id, NULL, 1);
+
+        // checks  that there is no other redirection afterwards       
+        for(int i=1; i<rest->nbr_arg; i++){ 
+            if(return_redirect(arg->data[i]) != -1){ 
+                return redirect(rest);
+            }
+        }
+        return rest;
     }
 
-    réfléchir au cas ou la pipeline est terminée
+    error : 
+        if(errno != 0){
+        perror("redirect pipe");
+        }
+        else{
+            char* msg= "incorrect command line\n";   
+            write(2, msg, strlen(msg));
+        }
 
+        return NULL;
+}
+
+    /*
     - renvoie un argument ?
     fonction récursive ou boucle ? 
     fork : comment on gère tous les processus et fait un sorte que chacun finisse ?
     Quand on execute une commande -> il faut passer par le main ?
     En plus des redirections, mettre les appels à forkexec dans une fonction
-}*/
+    */
+
 
 // int main (int argc, char** argv){
 
