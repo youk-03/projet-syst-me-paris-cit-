@@ -18,9 +18,22 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
 
 
 int main (int argc, char *argv[]){
+
+    //signal handling
+    struct sigaction action = {0};
+    action.sa_handler = SIG_IGN;
+    int signal_to_ign[] = {SIGINT,SIGTERM,SIGTTIN,SIGQUIT,SIGTTOU,SIGTSTP};
+
+    for(int i=0; i<6; i++){
+        if(sigaction(signal_to_ign[i], &action, NULL) == -1){
+            perror("sigaction");
+            exit_jsh(1,NULL);
+        }
+    }
 
     //copy of stdin stdout and stderr
     int stdout_ = dup(1);
@@ -44,6 +57,9 @@ int main (int argc, char *argv[]){
     job* job;
     bool isredirect = false;
 
+    if(setpgid(0,0) != 0){
+                perror("main l.48");
+                }// verifier que succes/////////////////////////////::
 
     while(1){
 
@@ -127,9 +143,9 @@ int main (int argc, char *argv[]){
 
         if(job != NULL) {
 
-            if(setpgid(pid,0) != 0){
-                perror("main l.131");
-                }// verifier que succes/////////////////////////////::
+            // if(setpgid(pid,0) != 0){
+            //     perror("main l.131");
+            //     }// verifier que succes/////////////////////////////::
             add_job(job,job_table);
             print_jobs(job,2); //.... running ...
         } 
