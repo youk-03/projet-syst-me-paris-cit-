@@ -63,7 +63,6 @@ void print_table_of_certain_jobs(processus_table * proc_table, int number){
     
 }
 
-// TODO: still need to check if detached or killed (then no need to look for proc file, bc it doesn't exist)
 
 int option_t(int pid, int fd){
     
@@ -122,11 +121,14 @@ int option_t(int pid, int fd){
         dprintf(fd,"Stopped");
         break;
     case 'Z':
-        dprintf(fd,"Zombie");
+        dprintf(fd,"Done"); // zombie = done ????
         break;
-    case 'S':
+    case 'S':  // for S and D: sleeping == stopped????
         dprintf(fd,"Sleeping");
-        break;  
+        break;
+    case 'D':
+        dprintf(fd,"Sleeping");
+        break;    
 
     default:
         printf("ERROR");
@@ -205,14 +207,14 @@ if(processus_table == NULL){
     return 1;
 }   
 
-
-
 if (arg==NULL){ 
+
     if(option==true) {
 
     for (int i=0; i<processus_table->length; i++){
         print_jobs(processus_table->table[i],1);
-        jobs_t(processus_table->table[i]->process_pid,1);
+        if (processus_table->table[i]->status!=4 && processus_table->table[i]->status!=5) // if process not done/killed
+            jobs_t(processus_table->table[i]->process_pid,1);
     }
 
     return 0;
@@ -236,7 +238,8 @@ if (arg==NULL){
             
         if (atoi(string_jobnumber)==processus_table->table[i]->id){
             print_jobs(processus_table->table[i],1);
-            jobs_t(processus_table->table[i]->process_pid,1);
+            if (processus_table->table[i]->status!=4 && processus_table->table[i]->status!=5) // if process not done/killed
+                jobs_t(processus_table->table[i]->process_pid,1);
         } 
     }
     free(string_jobnumber);
@@ -283,9 +286,3 @@ void maj_main_print(processus_table* proc_table, bool stdout){
 //why using a ic ?
 //bc delete processus do a memmove to shift all the processus so if i delete 2
 // 3 become the next 2 but in a for loop i goes to 3 without looking at the new 2
-
-
-
-// int main(){
-    
-// }
