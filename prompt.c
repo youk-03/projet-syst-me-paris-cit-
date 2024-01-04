@@ -100,16 +100,8 @@ bool is_redirect(argument* arg){
 
 bool is_pipe(argument* arg){ //////////////////////////////////////////////////////////////////////////////////////
   for(int i=0; i<arg->nbr_arg; i++){
-      int res = return_redirect(arg->data[i]);
-      if(res != -1) {
-         if (res == 7) {
-            return true;
-         } else {
-            return false;
-         }
-      }
+      if(strcmp(arg->data[i], "|") == 0) return true;
    }
-
    return false; 
 }
 
