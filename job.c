@@ -12,7 +12,14 @@
 #include <unistd.h>
 //job_table
 
+
+//fonction return job qui prend char* type %1 et return le job a l'id correspondant
+
 static int id = 1;
+
+void increment_id(){
+    id++;
+}
 
 
 job_table* allocate_job_table(size_t capacity){
@@ -93,6 +100,22 @@ int delete_job (job* job, job_table* table){
 
 }
 
+job* get_job (job_table* job_table, char* id){
+
+    if(id[0] != '%'){
+        return NULL;
+    }
+
+    int job_id = atoi(&id[1]);
+
+    for(int i=0; i<job_table->length; i++){
+        if (job_table->table[i]->id == job_id){
+            return job_table->table[i];
+        }
+    }
+
+    return NULL;
+}
 //job
 
 void free_job (job* job){
@@ -102,7 +125,7 @@ void free_job (job* job){
     job=NULL;
 }
 
-job* allocate_job (pid_t job_pid, pid_t father_pid, int status, char* name){
+job* allocate_job (pid_t job_pid, pid_t father_pid, int status, char* name, bool keep_id){
     job* res = malloc(sizeof(job));
     
     if(!res) goto error;
@@ -114,7 +137,7 @@ job* allocate_job (pid_t job_pid, pid_t father_pid, int status, char* name){
     res->name = strcpy(res->name,name);
     if(!res->name) goto error;
     res->id = id;
-    if(status != 4){ //for forkexec where i create it juste to delete it in the end
+    if(keep_id){ //for forkexec where i create it juste to delete it in the end
     id++;
     }
 
