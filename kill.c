@@ -44,8 +44,16 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         }
 
         free(string_jobnumber);
+        return 0;
 
-    } return 0;
+    } else {
+        
+        int sig=kill(atoi(arg1),SIGTERM); 
+                if(sig==-1){
+                    goto error ;
+                }
+        return 0;
+    }
     
 }
 

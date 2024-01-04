@@ -7,6 +7,8 @@
 #include "processus.h"
 #include "jobs.h"
 
+#define MAX_ALLOC 1000
+
 
 void print_jobs(processus * processus, int fd){ //fd is 1 or 2
 
@@ -62,6 +64,141 @@ void print_table_of_certain_jobs(processus_table * proc_table, int number){
 }
 
 
+int option_t(int pid, int fd){
+    
+
+    char proc_stat_filename[MAX_ALLOC];
+    char proc_comm_filename[MAX_ALLOC];
+    sprintf(proc_stat_filename, "/proc/%d/stat", pid);
+    sprintf(proc_comm_filename, "/proc/%d/comm", pid);
+
+    FILE *f_stat = fopen(proc_stat_filename, "r");
+    if (f_stat==NULL) {
+        perror("jobs : open");
+        exit(1);
+    }
+    FILE *f_test = fopen(proc_comm_filename, "r");
+    if (f_test==NULL) {
+        perror("jobs : open");
+        exit(1);
+    }
+
+    int other;
+    char other_char[MAX_ALLOC];
+    char comm[MAX_ALLOC];
+    char state;
+    int ppid;
+    int first_scan=-1 ;
+    int second_scan=-1 ;
+    first_scan=fscanf(f_stat, "%d %s %c %d",&other, other_char, &state, &ppid);
+
+    if(first_scan==-1) {
+        perror("jobs: scanf");
+        exit(1);
+    }
+    second_scan=fscanf(f_test, "%d %s",&other, comm);
+
+    if(second_scan==-1) {
+        perror("jobs: scanf");
+        exit(1);
+    }
+
+    if(fgets(comm, 500, f_test)==NULL) {
+        perror("jobs: fgets");
+        exit(1);
+    }
+
+    printf("    | %d ", pid);
+    fflush(NULL);
+
+    // TODO: clear this up
+
+    switch (state) {  
+    case 'R':
+        dprintf(fd,"Running");
+        break;
+    case 'T':
+        dprintf(fd,"Stopped");
+        break;
+    case 'Z':
+        dprintf(fd,"Done"); // zombie = done ????
+        break;
+    case 'S':  // for S and D: sleeping == stopped????
+        dprintf(fd,"Sleeping");
+        break;
+    case 'D':
+        dprintf(fd,"Sleeping");
+        break;    
+
+    default:
+        printf("ERROR");
+        goto error ;
+        break;
+    }
+    printf(" %s\n", comm);
+    fflush(NULL);
+    fclose(f_stat);
+    fclose(f_test);
+
+    return 0;
+
+    error : 
+    if (f_stat!=NULL) fclose(f_stat);
+    if (f_test!=NULL) fclose(f_test);
+    exit(1);
+
+}
+
+int jobs_t(int pid, int fd){
+    char proc_children_filename[MAX_ALLOC];
+    char * children_pid=malloc(MAX_ALLOC);
+
+    if(children_pid==NULL){
+        perror("jobs: malloc");
+        exit(1);
+    }
+
+    char *children;
+    sprintf(proc_children_filename, "/proc/%d/task/%d/children",pid,pid);
+    FILE *f_children=fopen(proc_children_filename,"r");
+
+    if(f_children==NULL) {
+        perror("jobs: fopen");
+        goto error; 
+    }
+
+    while (fgets(children_pid,100,f_children)!=NULL){
+        
+        children = strtok(children_pid, " ");
+        int init_child=atoi(children);
+        option_t(init_child,fd);
+        while(children) {
+                
+            children=strtok(NULL," ");
+            if (children!=NULL){
+            
+            int children_int=atoi(children);
+            option_t(children_int,fd);
+            jobs_t(children_int,fd);
+            }
+        }
+
+    }
+    free(children_pid);
+    fclose(f_children);
+    return 0;
+
+    error :
+    if (children_pid!=NULL) free (children_pid);
+    if (f_children!=NULL) fclose(f_children);
+    return 1;
+}
+
+
+
+
+
+
 int jobs(bool option, char * arg, processus_table * processus_table){ // option = -t is present ; arg = job number (%2)
 
 char * string_jobnumber=NULL;
@@ -69,17 +206,22 @@ char * string_jobnumber=NULL;
 if(processus_table == NULL){
     return 1;
 }   
- 
-if(option) {
 
-    printf("Not implemented yet ):");
+if (arg==NULL){ 
 
-    return 1;
-}
+    if(option==true) {
 
-if (arg==NULL){
-    print_table_of_jobs(processus_table);//
+    for (int i=0; i<processus_table->length; i++){
+        print_jobs(processus_table->table[i],1);
+        if (processus_table->table[i]->status!=4 && processus_table->table[i]->status!=5) // if process not done/killed
+            jobs_t(processus_table->table[i]->process_pid,1);
+    }
+
     return 0;
+        } else {
+    print_table_of_jobs(processus_table);
+    return 0;
+    }
 
 } else if (arg[0]=='%'){
 
@@ -89,11 +231,27 @@ if (arg==NULL){
         exit(1);
     }
     memcpy(string_jobnumber,arg+1,strlen(arg)-1);
+
+    if (option==true){ 
+
+        for (int i=0; i<processus_table->length; i++){
+            
+        if (atoi(string_jobnumber)==processus_table->table[i]->id){
+            print_jobs(processus_table->table[i],1);
+            if (processus_table->table[i]->status!=4 && processus_table->table[i]->status!=5) // if process not done/killed
+                jobs_t(processus_table->table[i]->process_pid,1);
+        } 
+    }
+    free(string_jobnumber);
+    return 0;
+    } else {
+    
    
    print_table_of_certain_jobs(processus_table,atoi(string_jobnumber));
  
     free(string_jobnumber);
     return 0;
+    }
 
 } else {
     perror("jobs");

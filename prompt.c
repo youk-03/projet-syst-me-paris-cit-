@@ -98,6 +98,12 @@ bool is_redirect(argument* arg){
    return false;
 }
 
+bool is_pipe(argument* arg){ //////////////////////////////////////////////////////////////////////////////////////
+  for(int i=0; i<arg->nbr_arg; i++){
+      if(strcmp(arg->data[i], "|") == 0) return true;
+   }
+   return false; 
+}
 
 int get_command(argument* arg){
    if(arg == NULL){

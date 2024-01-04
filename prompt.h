@@ -9,6 +9,8 @@ int get_command(argument* arg);
 
 bool is_redirect(argument* arg);
 
+bool is_pipe(argument* arg);
+
 int digit_number (int number);
 
 #endif
