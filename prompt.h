@@ -9,7 +9,7 @@ int get_command(argument* arg);
 
 bool is_redirect(argument* arg);
 
-bool is_pipe(argument* arg);
+bool is_pipe(const char* line);
 
 int digit_number (int number);
 

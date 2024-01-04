@@ -98,9 +98,9 @@ bool is_redirect(argument* arg){
    return false;
 }
 
-bool is_pipe(argument* arg){ //////////////////////////////////////////////////////////////////////////////////////
-  for(int i=0; i<arg->nbr_arg; i++){
-      if(strcmp(arg->data[i], "|") == 0) return true;
+bool is_pipe(const char* line){ //////////////////////////////////////////////////////////////////////////////////////
+  for(int i=0; i<strlen(line); i++){
+      if(line[i] == '|') return true;
    }
    return false; 
 }
