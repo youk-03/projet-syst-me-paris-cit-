@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <stddef.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -12,6 +13,11 @@
 #include "redirect.h"
 #include "pwd.h"
 #include "job.h"
+#include "prompt.h"
+#include "interrogation_exit.h"
+#include "cd.h"
+#include "jobs_command.h"
+#include "kill.h"
 
 argument* redirect (argument* arg){
 
@@ -276,7 +282,7 @@ int exec_command (argument* arg, job_table* job_table, int last_return){
     return ret;
 }
 
-int mypipe (const char* line, argument* arg, job_table* job_table, int last_return){
+int mypipe (const char* line, job_table* job_table, int last_return){
     argument* arg = split(line,'|');
 
     int ret = 1;
