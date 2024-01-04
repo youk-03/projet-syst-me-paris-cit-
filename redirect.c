@@ -11,6 +11,7 @@
 #include "mystring.h"
 #include "redirect.h"
 #include "pwd.h"
+#include "job.h"
 
 argument* redirect (argument* arg){
 
@@ -158,9 +159,6 @@ argument* redirect (argument* arg){
         }
         break;
 
-    case 7: // |
-        return pipe_redirect(cpy_argument(arg,option+1), cpy_argument_end(arg, option+2));
-        break;
     default: if(fic) {goto error;} fic=true; break; 
 
 
@@ -196,7 +194,6 @@ int return_redirect(char * string){
     // 2> 4
     // 2>> 5
     // 2>| 6
-    // | 7
     // -1
 
     if(strcmp(string, "<") == 0) return 0;
@@ -213,51 +210,134 @@ int return_redirect(char * string){
 
     if(strcmp(string, "2>|") == 0) return 6;
 
-    if(strcmp(string, "|") == 0) return 7;
-
     return -1;
 }
 
-argument* pipe_redirect (argument* arg, argument* rest ){
-    int fd[2] = {-1,-1};
-    if(pipe(fd)!=0){
-        goto error;
-    }
-
-    int process_id = fork();
-    if (process_id == -1){
-        close(fd[0]);
-        close(fd[1]);
-        goto error;
-    } if (process_id == 0) {
-        close(fd[0]);
-        dup2(fd[1],1);
-        return arg;
-    } else {
-        close(fd[1]);
-        dup2(fd[0],0);
-        waitpid(process_id, NULL, 1);
-
-        // checks  that there is no other redirection afterwards       
-        for(int i=1; i<rest->nbr_arg; i++){ 
-            if(return_redirect(arg->data[i]) != -1){ 
-                return redirect(rest);
+int exec_command (argument* arg, job_table* job_table, int last_return){
+    int ret = 1;
+    switch(get_command(arg)){
+        case 0: ret = interrogation_point(last_return); break; //?
+        case 1: //exit
+        if(arg->nbr_arg > 1){
+            ret = exit_jsh(atoi(arg->data[1]),job_table);
+         }
+        else{
+            ret = exit_jsh(last_return,job_table);
+        } 
+        break; 
+        case 2: ret = pwd(); break; //pwd
+        case 3: 
+            if(arg->nbr_arg == 1){ //case where it's only cd
+                ret = cd(0,NULL);
             }
-        }
-        return rest;
-    }
+            else if(arg->nbr_arg > 2){ //case where cd is incorrect arg like "cd dd sds z"
+                ret=1;
+                char *error= "cd: too many arguments\n";
+                if(write(STDERR_FILENO, error, strlen(error)) != strlen(error)){
+                    perror("main: write ");
+                }
+                
+            }
 
-    error : 
-        if(errno != 0){
-        perror("redirect pipe");
+            else{//case for cd - or cd my/path
+                ret = cd(1,arg->data[1]);
+            }
+
+        break; //cd
+        case 4: 
+        
+        ret = forkexec(arg->data[0],arg->data,job_table);  //forkexec
+
+        break;
+
+        case 6: 
+        maj_job_table(job_table,true);
+        if (arg->nbr_arg > 1) {
+            ret = jobs(false,arg->data[1],job_table);
+        } else {
+            ret = jobs(false, NULL, job_table);
+        }
+        break; //jobs
+
+        case 7: //kill
+
+        if(arg->nbr_arg > 2){
+            ret = kill_cmd(arg->data[1],arg->data[2],job_table);
         }
         else{
-            char* msg= "incorrect command line\n";   
-            write(2, msg, strlen(msg));
+            ret = kill_cmd(arg->data[1],NULL,job_table);
         }
 
-        return NULL;
+        break;
+
+        default: break;
+
+    }
+    return ret;
 }
+
+int mypipe (const char* line, argument* arg, job_table* job_table, int last_return){
+    argument* arg = split(line,'|');
+
+    int ret = 1;
+    int stdout_ = dup(1);
+    int stdin_ = dup(0);
+    int stderr_ = dup(2);
+
+    for (int i=0; i<arg->nbr_arg-1; i++){
+        int fd[2] = {-1,-1};
+
+        if(pipe(fd)!=0){
+            goto error;
+        }
+
+        int process_id = fork();
+        if (process_id == -1){
+            close(fd[0]);
+            close(fd[1]);
+            goto error;
+        } if (process_id == 0) { // fils
+            close(fd[0]); // ferme lecture
+            dup2(fd[1],1);
+            
+            argument* arg2 = split(arg->data[i],' ');
+            ret = exec_command(arg, job_table, last_return);
+            free_argument(arg2);
+            exit(0);
+
+        } else { // père
+            close(fd[1]);
+            dup2(fd[0],0);
+            waitpid(process_id, NULL, 1);
+
+        }
+
+        if (i==arg->nbr_arg-1){ //fin du pipe
+            argument* arg2 = split(arg->data[i],' ');
+            ret = exec_command(arg, job_table, last_return);
+            free_argument(arg2);
+            close(fd[0]);
+        }
+    }
+
+    free_argument(arg);
+    dup2(stdout_,1); 
+    dup2(stdin_,0); 
+    dup2(stderr_,2); 
+
+    return ret;
+
+
+    error :
+        free_argument(arg);
+        dup2(stdout_,1); 
+        dup2(stdin_,0); 
+        dup2(stderr_,2); 
+        perror("pipe : ");
+        // rétablir fd
+        return 1;
+}
+
 
     /*
     - renvoie un argument ?

@@ -5,7 +5,9 @@ argument* redirect (argument* arg);
 
 int return_redirect(char * string);
 
-argument* pipe_redirect (argument* arg, argument* rest );
+int exec_command (argument* arg, job_table* job_table, int last_return);
+
+int mypipe (const char* line, argument* arg, job_table* job_table, int last_return);
 
 
 #endif 
