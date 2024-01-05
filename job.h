@@ -36,11 +36,17 @@ int delete_job (job* job, job_table* table);
 
 int maj_job_table (job_table* job_table, bool stdout);
 
+job* get_job (job_table* job_table, char* id);
+
 //job
 
 void free_job (job* job);
 
-job* allocate_job (pid_t job_pid, pid_t father_pid, int status, char* name);
+job* allocate_job (pid_t job_pid, pid_t father_pid, int status, char* name, bool keep_id);
+
+//out
+
+void increment_id();
 
 
 #endif

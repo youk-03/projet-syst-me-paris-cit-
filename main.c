@@ -19,21 +19,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+    static int last_return = 0;
+    static int job_number = 0;
 
 
 int main (int argc, char *argv[]){
 
     //signal handling
-    struct sigaction action = {0};
-    action.sa_handler = SIG_IGN;
-    int signal_to_ign[] = {SIGINT,SIGTERM,SIGTTIN,SIGQUIT,SIGTTOU,SIGTSTP};
-
-    for(int i=0; i<6; i++){
-        if(sigaction(signal_to_ign[i], &action, NULL) == -1){
-            perror("sigaction");
-            exit_jsh(1,NULL);
-        }
-    }
+    reset_signal((int)SIG_IGN);
 
     //copy of stdin stdout and stderr
     int stdout_ = dup(1);
@@ -45,9 +38,8 @@ int main (int argc, char *argv[]){
 
     using_history();
 
+    pid_t  shell_pgid = getpid();
 
-    static int last_return = 0;
-    static int job_number = 0;
     int pid = -1;
     char* line_read = NULL; //Readline
     char* prompt= NULL;
@@ -57,9 +49,7 @@ int main (int argc, char *argv[]){
     job* job;
     bool isredirect = false;
 
-    if(setpgid(0,0) != 0){
-                perror("main l.48");
-                }// verifier que succes/////////////////////////////::
+    if(setpgid(0,0) != 0){ perror("main l.48"); }
 
     while(1){
 
@@ -81,8 +71,6 @@ int main (int argc, char *argv[]){
 
 
     line_read = readline(prompt);
-
-/////////////////////////////////////////////////////////////
 
     if(!line_read){ //ctrl+D
         last_return = exit_jsh(last_return,job_table);
@@ -145,13 +133,9 @@ int main (int argc, char *argv[]){
 
         pid = forkexecBackground(arg->data[0],arg->data); //forkexecBackground
         line_read[strlen(line_read)-2] = '\0';
-        job = allocate_job(pid,getpid(),1,line_read);
+        job = allocate_job(pid,getpid(),1,line_read,true);
 
         if(job != NULL) {
-
-            // if(setpgid(pid,0) != 0){
-            //     perror("main l.131");
-            //     }// verifier que succes/////////////////////////////::
             add_job(job,job_table);
             print_jobs(job,2); //.... running ...
         } 
@@ -160,8 +144,9 @@ int main (int argc, char *argv[]){
         }
 
         else{
-        
+
         last_return = forkexec(arg->data[0],arg->data,job_table);  //forkexec
+        put_jsh_foreground(shell_pgid); ////////////////////////////////////////////////////////////////////
 
         }
 
@@ -186,6 +171,30 @@ int main (int argc, char *argv[]){
         }
 
         break;
+        case 8: //bg
+        if(arg->data[1]){  
+        last_return = put_background(get_job(job_table, arg->data[1]));
+        }
+        else {
+            last_return=1;
+            dprintf(2,"bg: invalid id\n");
+        }
+        
+        break; 
+
+        case 9: //fg
+
+        if(arg->data[1]){  
+        last_return = put_foreground(get_job(job_table, arg->data[1]), -1, job_table);
+        put_jsh_foreground(shell_pgid);
+        }
+        else{
+            last_return = 1;
+            dprintf(2,"fg: invalid id\n");
+        }
+        
+        
+        break; 
 
         case 10: // pipeline
         last_return = mypipe(line_read,job_table,last_return);
