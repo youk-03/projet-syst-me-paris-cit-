@@ -98,9 +98,11 @@ bool is_redirect(argument* arg){
    return false;
 }
 
-bool is_pipe(argument* arg){ //////////////////////////////////////////////////////////////////////////////////////
-  for(int i=0; i<arg->nbr_arg; i++){
-      if(strcmp(arg->data[i], "|") == 0) return true;
+bool is_pipe(const char* line){ //////////////////////////////////////////////////////////////////////////////////////
+  for(int i=0; i<strlen(line); i++){
+      if(line[i] == '|') {
+         return true;
+      }
    }
    return false; 
 }
@@ -122,6 +124,7 @@ int get_command(argument* arg){
    //7 kill
    //8 bg
    //9 fg
+   //10 pipeline
    if(is_redirect(arg)){
       return 5;
    }
@@ -154,6 +157,10 @@ int get_command(argument* arg){
 
    if(strcmp(command,"fg") == 0){
       return 9;
+   }
+
+   if(strcmp(command,"pp") == 0){
+      return 10;
    }
    return 4;
 

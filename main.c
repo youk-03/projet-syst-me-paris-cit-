@@ -92,6 +92,12 @@ int main (int argc, char *argv[]){
         }
         isredirect= true;
     }
+
+    if (is_pipe(line_read)){
+        free_argument(arg);
+        arg = split("pp", ' ');
+    }
+
     switch(get_command(arg)){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
@@ -165,7 +171,6 @@ int main (int argc, char *argv[]){
         }
 
         break;
-
         case 8: //bg
         if(arg->data[1]){  
         last_return = put_background(get_job(job_table, arg->data[1]));
@@ -190,6 +195,11 @@ int main (int argc, char *argv[]){
         
         
         break; 
+
+        case 10: // pipeline
+        last_return = mypipe(line_read,job_table,last_return);
+
+        break;
 
         default: break;
 
