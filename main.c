@@ -26,7 +26,7 @@
 int main (int argc, char *argv[]){
 
     //signal handling
-    reset_signal((int)SIG_IGN);
+    reset_signal(1);
 
     //copy of stdin stdout and stderr
     int stdout_ = dup(1);
