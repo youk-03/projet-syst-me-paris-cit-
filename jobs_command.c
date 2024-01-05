@@ -7,6 +7,8 @@
 #include "job.h"
 #include "jobs_command.h"
 
+#define MAX_ALLOC 1000
+
 
 void print_jobs(job * job, int fd){ //fd is 1 or 2
 
@@ -212,7 +214,7 @@ if (arg==NULL){
 
     return 0;
         } else {
-    print_table_of_jobs(processus_table);
+    print_table_of_jobs(job_table);
     return 0;
     }
 
@@ -231,7 +233,7 @@ if (arg==NULL){
             
         if (atoi(string_jobnumber)==job_table->table[i]->id){
             print_jobs(job_table->table[i],1);
-            if (job_table->table[i]->status!=4 && job_table->table[i]->status!=5) // if process not done/killed
+            if (job_table->table[i]->status!=4 && job_table->table[i]->status!=5) // if job not done/killed
                 jobs_t(job_table->table[i]->job_pid,1);
         } 
     }
