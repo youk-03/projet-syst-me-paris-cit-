@@ -306,7 +306,7 @@ int mypipe (const char* line, job_table* job_table, int last_return){
             close(fd[0]); // ferme lecture
             dup2(fd[1],1);
             argument* arg2 = split(arg->data[i],' ');
-            ret = exec_command(arg, job_table, last_return);
+            ret = exec_command(arg2, job_table, last_return);
             free_argument(arg2);
             exit(0);
 
@@ -320,7 +320,7 @@ int mypipe (const char* line, job_table* job_table, int last_return){
 
         if (i==arg->nbr_arg-1){ //fin du pipe
             argument* arg2 = split(arg->data[i+1],' ');
-            ret = exec_command(arg, job_table, last_return);
+            ret = exec_command(arg2, job_table, last_return);
             free_argument(arg2);
             close(fd[0]);
         }
@@ -344,14 +344,44 @@ int mypipe (const char* line, job_table* job_table, int last_return){
         return 1;
 }
 
+argument* process_substitution(const char* line, job_table* job_table, int last_return) {
+    argument* arg = split(line, '<');
+    int fl[arg->nbr_arg-1];
 
-    /*
-    - renvoie un argument ?
-    fonction récursive ou boucle ? 
-    fork : comment on gère tous les processus et fait un sorte que chacun finisse ?
-    Quand on execute une commande -> il faut passer par le main ?
-    En plus des redirections, mettre les appels à forkexec dans une fonction
-    */
+    for (int i=0; i<arg->nbr_arg-1; i++){
+        int process_id = fork();
+        if (process_id==-1){
+            goto error;
+        }
+        if (process_id==0){ // fils
+            fl[i] = dup(1);
+            char* s = arg->data[i+1];
+            for (int j=0; j<strlen(s); j++){
+                if (s[j]=='('|| s[j]==')') s[j]==' '; // un peu dangereux ???? ///////////////
+            }
+            argument* arg2 = split(s, ' ');
+            exec_command(arg2, job_table, last_return);
+            free_argument(arg2);
+            exit(0);
+        } else { // père
+            wait(NULL);
+        }
+    }
+
+    char * cmd = arg->data[0];
+    for (int i=0; i<arg->nbr_arg-1; i++){
+        sprintf(cmd, "%s %i", cmd, fl[0]);
+    }
+    argument* arg3 = split(cmd, ' ');
+    return arg3;
+
+    error :
+
+    free_argument(arg);
+    perror("process substitution : ");
+    return NULL;
+
+}
 
 
 // int main (int argc, char** argv){

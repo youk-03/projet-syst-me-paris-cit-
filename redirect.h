@@ -11,5 +11,7 @@ int exec_command (argument* arg, job_table* job_table, int last_return);
 
 int mypipe (const char* line, job_table* job_table, int last_return);
 
+argument* process_substitution(const char* line, job_table* job_table, int last_return);
+
 
 #endif 
