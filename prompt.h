@@ -11,6 +11,8 @@ bool is_redirect(argument* arg);
 
 bool is_pipe(const char* line);
 
+bool is_process_substitution(argument* arg);
+
 int digit_number (int number);
 
 #endif
