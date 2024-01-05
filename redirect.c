@@ -251,7 +251,7 @@ int exec_command (argument* arg, job_table* job_table, int last_return){
 
         break; //cd
         case 4: 
-        
+
         ret = forkexec(arg->data[0],arg->data,job_table);  //forkexec
 
         break;
@@ -305,7 +305,6 @@ int mypipe (const char* line, job_table* job_table, int last_return){
         } if (process_id == 0) { // fils
             close(fd[0]); // ferme lecture
             dup2(fd[1],1);
-            
             argument* arg2 = split(arg->data[i],' ');
             ret = exec_command(arg, job_table, last_return);
             free_argument(arg2);
@@ -314,12 +313,13 @@ int mypipe (const char* line, job_table* job_table, int last_return){
         } else { // père
             close(fd[1]);
             dup2(fd[0],0);
+            close(fd[0]);
             waitpid(process_id, NULL, 1);
 
         }
 
         if (i==arg->nbr_arg-1){ //fin du pipe
-            argument* arg2 = split(arg->data[i],' ');
+            argument* arg2 = split(arg->data[i+1],' ');
             ret = exec_command(arg, job_table, last_return);
             free_argument(arg2);
             close(fd[0]);

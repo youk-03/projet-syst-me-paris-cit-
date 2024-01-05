@@ -104,6 +104,12 @@ int main (int argc, char *argv[]){
         }
         isredirect= true;
     }
+
+    if (is_pipe(line_read)){
+        free_argument(arg);
+        arg = split("pp", ' ');
+    }
+
     switch(get_command(arg)){
         case 0: last_return = interrogation_point(last_return); break; //?
         case 1: //exit
@@ -178,6 +184,11 @@ int main (int argc, char *argv[]){
         else{
             last_return = kill_cmd(arg->data[1],NULL,job_table);
         }
+
+        break;
+
+        case 10: // pipeline
+        last_return = mypipe(line_read,job_table,last_return);
 
         break;
 
