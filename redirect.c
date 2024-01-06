@@ -349,31 +349,47 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
     int fl[arg->nbr_arg-1];
 
     for (int i=0; i<arg->nbr_arg-1; i++){
+
+        int tube[2] = {-1, -1};
+        if(pipe(tube)!=0){
+            goto error;      
+        }
+
         int process_id = fork();
         if (process_id==-1){
             goto error;
         }
         if (process_id==0){ // fils
-            fl[i] = dup(1);
+            close(tube[0]);
+
+            if (dup2(tube[1],1)==-1) {perror("echec dup2 ----\n");}
+            else { printf(" Succes dup2 \n");}
+            
             char* s = arg->data[i+1];
             for (int j=0; j<strlen(s); j++){
-                if (s[j]=='('|| s[j]==')') s[j]==' '; // un peu dangereux ???? ///////////////
+                if (s[j]=='('|| s[j]==')') s[j]=' '; // un peu dangereux ???? ///////////////
             }
+            printf("%s \n", s);
             argument* arg2 = split(s, ' ');
             exec_command(arg2, job_table, last_return);
             free_argument(arg2);
             exit(0);
         } else { // père
+            close(tube[1]);
+            fl[i] = tube[0];
             wait(NULL);
         }
     }
 
     char * cmd = arg->data[0];
     for (int i=0; i<arg->nbr_arg-1; i++){
-        sprintf(cmd, "%s %i", cmd, fl[0]);
+        sprintf(cmd, "%s %i", cmd, fl[i]);
     }
     argument* arg3 = split(cmd, ' ');
     return arg3;
+    for (int i=0; i<arg->nbr_arg-1; i++){
+        close(fl[i]);
+    }
 
     error :
 
@@ -382,6 +398,23 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
     return NULL;
 
 }
+
+/*
+[0]...x/brunetj/Documents/SY$ diff <( ls projet-sy5) <( ls sy5-2023-2024)
+forkexec: Incorrect command :: No such file or directory
+forkexec: Incorrect command :: No such file or directory
+malloc(): memory corruption (fast)
+
+diff <( ls projet-sy5 ) <( ls sy5-2023-2024 )
+forkexec: Incorrect command :: No such file or directory
+forkexec: Incorrect command :: No such file or directory
+diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
+diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
+corrupted size vs. prev_size
+
+faire des malloc
+
+*/
 
 
 // int main (int argc, char** argv){
