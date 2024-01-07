@@ -362,8 +362,9 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
         if (process_id==0){ // fils
             close(tube[0]);
 
-            if (dup2(tube[1],1)==-1) {perror("echec dup2 ----\n");}
-            else { printf(" Succes dup2 \n");}
+            if (dup2(tube[1],1)==-1) {
+                goto error;;
+            }
             
             char* s = arg->data[i+1];
             for (int j=0; j<strlen(s); j++){
@@ -386,10 +387,13 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
         sprintf(cmd, "%s /proc/self/fd/%i", cmd, fl[i]);
     }
     argument* arg3 = split(cmd, ' ');
-    return arg3;
-    for (int i=0; i<arg->nbr_arg-1; i++){
+    /*for (int i=0; i<arg->nbr_arg-1; i++){
         close(fl[i]);
-    }
+    }*/
+
+    //free_argument(arg);
+
+    return arg3;
 
     error :
 
