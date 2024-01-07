@@ -19,6 +19,8 @@
 #include "jobs_command.h"
 #include "kill.h"
 
+#define MAX_ALLOC 1000
+
 argument* redirect (argument* arg){
 
     errno=0;
@@ -382,16 +384,18 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
         }
     }
 
-    char * cmd = arg->data[0];
+    char * cmd = malloc(MAX_ALLOC);
+    strcpy(cmd, arg->data[0]);
     for (int i=0; i<arg->nbr_arg-1; i++){
         sprintf(cmd, "%s /proc/self/fd/%i", cmd, fl[i]);
     }
     argument* arg3 = split(cmd, ' ');
+    free(cmd);
     /*for (int i=0; i<arg->nbr_arg-1; i++){
         close(fl[i]);
     }*/
 
-    //free_argument(arg);
+    free_argument(arg);
 
     return arg3;
 
