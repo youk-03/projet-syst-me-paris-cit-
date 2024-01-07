@@ -383,7 +383,7 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
 
     char * cmd = arg->data[0];
     for (int i=0; i<arg->nbr_arg-1; i++){
-        sprintf(cmd, "%s %i", cmd, fl[i]);
+        sprintf(cmd, "%s /proc/self/fd/%i", cmd, fl[i]);
     }
     argument* arg3 = split(cmd, ' ');
     return arg3;
