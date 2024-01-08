@@ -83,6 +83,14 @@ int main (int argc, char *argv[]){
 
     arg=split(line_read,' ');
 
+    if (is_process_substitution(arg)){
+        argument* tmp = process_substitution(line_read,job_table,last_return);
+        if (tmp!=NULL){
+            free_argument(arg);
+            arg=tmp;
+        }
+    }
+
     //CASE WHERE REDIRECT TO CHANGE THE FD AND CREATE THE FILE
        if (is_pipe(line_read)){
         free_argument(arg);

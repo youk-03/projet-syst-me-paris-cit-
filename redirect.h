@@ -13,5 +13,7 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
 
 int is_return_redirect (argument* arg);
 
+argument* process_substitution(const char* line, job_table* job_table, int last_return);
+
 
 #endif 

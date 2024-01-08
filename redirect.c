@@ -19,10 +19,12 @@
 #include "jobs_command.h"
 #include "kill.h"
 #include <signal.h>
+#define MAX_ALLOC 1000
 
 static bool failure = false;
 
 argument* redirect (argument* arg, int redirection[3]){
+
 
     errno=0;
 
@@ -571,7 +573,7 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
             close(fd[0]); // ferme lecture
             dup2(fd[1],1);
             argument* arg2 = split(arg->data[i],' ');
-            ret = exec_command(arg, job_table, last_return);
+            ret = exec_command(arg2, job_table, last_return);
             free_argument(arg2);
             exit(0);
 
@@ -587,7 +589,7 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
 
         if (i==arg->nbr_arg-1){ //fin du pipe
             argument* arg2 = split(arg->data[i+1],' ');
-            ret = exec_command(arg, job_table, last_return);
+            ret = exec_command(arg2, job_table, last_return);
             free_argument(arg2);
             close(fd[0]);
         }
@@ -611,14 +613,83 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
         return 1;
 }*/
 
+argument* process_substitution(const char* line, job_table* job_table, int last_return) {
+    argument* arg = split(line, '<');
+    int fl[arg->nbr_arg-1];
 
-    /*
-    - renvoie un argument ?
-    fonction récursive ou boucle ? 
-    fork : comment on gère tous les processus et fait un sorte que chacun finisse ?
-    Quand on execute une commande -> il faut passer par le main ?
-    En plus des redirections, mettre les appels à forkexec dans une fonction
-    */
+    for (int i=0; i<arg->nbr_arg-1; i++){
+
+        int tube[2] = {-1, -1};
+        if(pipe(tube)!=0){
+            goto error;      
+        }
+
+        int process_id = fork();
+        if (process_id==-1){
+            goto error;
+        }
+        if (process_id==0){ // fils
+            close(tube[0]);
+
+            if (dup2(tube[1],1)==-1) {
+                goto error;;
+            }
+            
+            char* s = arg->data[i+1];
+            for (int j=0; j<strlen(s); j++){
+                if (s[j]=='('|| s[j]==')') s[j]=' '; // un peu dangereux ???? ///////////////
+            }
+            printf("%s \n", s);
+            argument* arg2 = split(s, ' ');
+            exec_command(arg2, job_table, last_return);
+            free_argument(arg2);
+            exit(0);
+        } else { // père
+            close(tube[1]);
+            fl[i] = tube[0];
+            wait(NULL);
+        }
+    }
+
+    char * cmd = malloc(MAX_ALLOC);
+    strcpy(cmd, arg->data[0]);
+    for (int i=0; i<arg->nbr_arg-1; i++){
+        sprintf(cmd, "%s /proc/self/fd/%i", cmd, fl[i]);
+    }
+    argument* arg3 = split(cmd, ' ');
+    free(cmd);
+    /*for (int i=0; i<arg->nbr_arg-1; i++){
+        close(fl[i]);
+    }*/
+
+    free_argument(arg);
+
+    return arg3;
+
+    error :
+
+    free_argument(arg);
+    perror("process substitution : ");
+    return NULL;
+
+}
+
+/*
+[0]...x/brunetj/Documents/SY$ diff <( ls projet-sy5) <( ls sy5-2023-2024)
+forkexec: Incorrect command :: No such file or directory
+forkexec: Incorrect command :: No such file or directory
+malloc(): memory corruption (fast)
+
+diff <( ls projet-sy5 ) <( ls sy5-2023-2024 )
+forkexec: Incorrect command :: No such file or directory
+forkexec: Incorrect command :: No such file or directory
+diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
+diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
+corrupted size vs. prev_size
+
+faire des malloc
+
+*/
 
 // int main (int argc, char** argv){
 
