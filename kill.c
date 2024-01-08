@@ -33,7 +33,7 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         for (int i=0; i<tab->length; i++){
 
             if(tab->table[i]->id==atoi(string_jobnumber)){
-                int sig=kill(-tab->table[i]->job_pid,SIGTERM); 
+                int sig=kill(-(tab->table[i]->job_pid),SIGTERM); 
                 if(sig==-1){
                     goto error ;
                 }
@@ -48,7 +48,7 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
 
     } else {
         
-        int sig=kill(atoi(arg1),SIGTERM); 
+        int sig=kill(-(atoi(arg1)),SIGTERM); 
                 if(sig==-1){
                     goto error ;
                 }
@@ -90,7 +90,7 @@ if (arg2==NULL){ // example: kill %2 sends sigterm to all processes of job 2
         for (int i=0; i<tab->length; i++){
 
             if(tab->table[i]->id==atoi(string_jobnumber)){
-                int sig=kill(-tab->table[i]->job_pid,atoi(string_signumber)); 
+                int sig=kill(-(tab->table[i]->job_pid),atoi(string_signumber)); 
                 if(sig==-1){
                     goto error ;
                 }

@@ -42,7 +42,7 @@ void reset_signal(int act){ //SIG_DFL or SIG_IGN
 
 
 
-int forkexec(char * file_name, char ** arguments, job_table* job_table){
+int forkexec(char * file_name, char ** arguments, job_table* job_table, int shell_fd){
     errno=0;
     int process_id=fork();
     int status;
@@ -56,14 +56,15 @@ int forkexec(char * file_name, char ** arguments, job_table* job_table){
         if(setpgid(getpid(),getpid()) != 0){
                 perror("forkexec l.30");
             }
+       // printf("pid: %d, pgid: %d\n", getpid(), getpgid(getpid()));    
         
-        put_foreground(NULL, getpgid(getpid()), job_table); //////////////////////////////////////////////////:
+        put_foreground(NULL, getpgid(getpid()), job_table, shell_fd); 
 
         reset_signal(0);
 
         execvp(file_name,arguments);
         perror("forkexec: Incorrect command :");
-        exit(1); //TODO : changer
+        exit(1); 
     } else {
 
          job* job = allocate_job(process_id, getppid(), 1, file_name, false); 
@@ -72,7 +73,6 @@ int forkexec(char * file_name, char ** arguments, job_table* job_table){
          int res = wait_for_job(job,job_table,true);
 
          return res;
-        ///////////////////////////////////////////////////////////////
     }
 }
 
@@ -93,11 +93,37 @@ int forkexecBackground( char * file_name, char ** arguments){
 
         execvp(file_name,arguments);
         perror("forkexecBackground : Incorrect command :");
-        exit(1); //TODO: changer
+        exit(1); 
     } else {
         return process_id ;
     }
 }
+
+
+
+int exec(job* job, int shell_fd){ 
+
+//si job->job_pid == -1 le mettre a getpid et setpgrd a job_pid
+if(job->job_pid == -1){
+
+    job->job_pid = getpid();
+    job->status = 1;
+    if(setpgid(getpid(), job->job_pid) == -1){
+        perror("exec setpgidddd");
+    }
+    put_foreground(NULL, job->job_pid,NULL,shell_fd); //job_table pas utile ici
+}
+else{
+    if(setpgid(getpid(), job->job_pid) == -1){
+        perror("exec setpgid");
+    } 
+     // printf("pid: %d, job_pid: %d\n", getpid(), job->job_pid);
+
+}
+ reset_signal(0); //annuler les signaux transmis par jsh
+
+}
+
 
 bool is_background(argument* arg){
 
@@ -113,13 +139,13 @@ bool is_background(argument* arg){
 
 }
 
-int put_foreground (job *job, pid_t pgid, job_table* job_table){
+int put_foreground (job *job, pid_t pgid, job_table* job_table, int shell_fd){
     bool cont = false;
 
 
     if(job == NULL && pgid != -1){
 
-        if(tcsetpgrp(STDIN_FILENO, pgid) == -1){
+        if(tcsetpgrp(shell_fd, pgid) == -1){
         perror("put foreground");
         return 1;
     }
@@ -135,10 +161,12 @@ int put_foreground (job *job, pid_t pgid, job_table* job_table){
         cont = true;
     }
 
-    if(tcsetpgrp(STDIN_FILENO, job->job_pid) == -1){
+    if(tcsetpgrp(shell_fd, job->job_pid) == -1){
         perror("put foreground");
         return 1;
     }
+
+     reset_signal(0);
 
     if(cont){ 
 
@@ -157,9 +185,11 @@ int put_foreground (job *job, pid_t pgid, job_table* job_table){
     return 0;
 }
 
-void put_jsh_foreground (pid_t shell_pgid){
+void put_jsh_foreground (pid_t shell_pgid, int shell_fd){
 
-    if(tcsetpgrp(STDIN_FILENO, shell_pgid) == -1){
+     reset_signal(1);
+
+    if(tcsetpgrp(shell_fd, shell_pgid) == -1){
         perror("put_jsh_foreground");
     }
 }
@@ -176,7 +206,7 @@ int put_background (job *job){
 }
 
 
-int wait_for_job (job *job, job_table *job_table, bool id){ //delete de la job table !!
+int wait_for_job (job *job, job_table *job_table, bool id){ //delete from job_table
 
     int status = -1;
 

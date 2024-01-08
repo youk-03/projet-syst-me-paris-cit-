@@ -32,7 +32,9 @@ int main (int argc, char *argv[]){
     int stdout_ = dup(1);
     int stdin_ = dup(0);
     int stderr_ = dup(2);
-    //
+     //faut peut être les fermer non ?
+    
+    static int redirection[3] = {0,0,0}; //when redirection[i] == 1 it means that dup2 has been used on it 0 : stdin 1 : stdout 2 : stderr
 
     rl_outstream = stderr;
 
@@ -50,6 +52,7 @@ int main (int argc, char *argv[]){
     bool isredirect = false;
 
     if(setpgid(0,0) != 0){ perror("main l.48"); }
+    //printf("shell pid %d, shell pgid %d\n", shell_pgid, getpgid(0));
 
     while(1){
 
@@ -81,8 +84,13 @@ int main (int argc, char *argv[]){
     arg=split(line_read,' ');
 
     //CASE WHERE REDIRECT TO CHANGE THE FD AND CREATE THE FILE
-    if(get_command(arg) == 5){
-        argument* tmp = redirect(arg);
+       if (is_pipe(line_read)){
+        free_argument(arg);
+        arg = split("pp", ' ');
+    }
+
+    else if(get_command(arg) == 5){
+        argument* tmp = redirect(arg, redirection);
         if(tmp!=NULL){
             free_argument(arg);
             arg=tmp;       
@@ -93,10 +101,6 @@ int main (int argc, char *argv[]){
         isredirect= true;
     }
 
-    if (is_pipe(line_read)){
-        free_argument(arg);
-        arg = split("pp", ' ');
-    }
 
     switch(get_command(arg)){
         case 0: last_return = interrogation_point(last_return); break; //?
@@ -145,8 +149,8 @@ int main (int argc, char *argv[]){
 
         else{
 
-        last_return = forkexec(arg->data[0],arg->data,job_table);  //forkexec
-        put_jsh_foreground(shell_pgid); ////////////////////////////////////////////////////////////////////
+        last_return = forkexec(arg->data[0],arg->data,job_table, stdin_);  //forkexec
+        put_jsh_foreground(shell_pgid, stdin_); ////////////////////////////////////////////////////////////////////
 
         }
 
@@ -185,8 +189,8 @@ int main (int argc, char *argv[]){
         case 9: //fg
 
         if(arg->data[1]){  
-        last_return = put_foreground(get_job(job_table, arg->data[1]), -1, job_table);
-        put_jsh_foreground(shell_pgid);
+        last_return = put_foreground(get_job(job_table, arg->data[1]), -1, job_table, stdin_);
+        put_jsh_foreground(shell_pgid, stdin_);
         }
         else{
             last_return = 1;
@@ -197,8 +201,15 @@ int main (int argc, char *argv[]){
         break; 
 
         case 10: // pipeline
-        last_return = mypipe(line_read,job_table,last_return);
-
+   
+        job = allocate_job(-1,-1,-1,line_read,true);
+        if(job!= NULL){
+           add_job(job,job_table); 
+        }
+        else goto error;
+   
+        last_return = mpipe(line_read,job_table,last_return, shell_pgid, redirection, job); 
+        put_jsh_foreground(shell_pgid, stdin_); 
         break;
 
         default: break;
@@ -208,10 +219,18 @@ int main (int argc, char *argv[]){
     if(isredirect){
         
     //putting back every fd to normal
-
+    if(redirection[1] == 1){
     dup2(stdout_,1); 
+    redirection[1] = 0;
+    }
+    if(redirection[0] == 1){
     dup2(stdin_,0); 
-    dup2(stderr_,2); 
+    redirection[0] == 0;
+    }
+    if(redirection[2] == 1){
+    dup2(stderr_,2);
+    redirection[2] == 0; 
+    }
     isredirect=false;
     }
 

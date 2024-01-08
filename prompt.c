@@ -99,8 +99,11 @@ bool is_redirect(argument* arg){
 }
 
 bool is_pipe(const char* line){ //////////////////////////////////////////////////////////////////////////////////////
+if(!line){
+   return false;
+}
   for(int i=0; i<strlen(line); i++){
-      if(line[i] == '|') {
+      if(line[i] == '|' && line[i+1] == ' ' && line[i-1] == ' ') {
          return true;
       }
    }
