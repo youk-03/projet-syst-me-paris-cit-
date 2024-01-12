@@ -217,7 +217,7 @@ int return_redirect(char * string){
 
     if(strcmp(string, "<") == 0) return 0;
 
-    if(strcmp(string, ">") == 0) return 1;
+    if(strcmp(string, ">") == 0) return 1; 
 
     if(strcmp(string, ">>") == 0) return 2;
 
@@ -329,7 +329,7 @@ int exec_command (argument* arg, job_table* job_table, int last_return, int shel
         default: break; //redirect echoue 
 
     }
-    free_argument(arg); ///////////////////////////
+    free_argument(arg); 
 
         if(isredirect){
         
@@ -352,19 +352,55 @@ int exec_command (argument* arg, job_table* job_table, int last_return, int shel
     return ret;
 }
 
-int is_return_redirect (argument* arg){
+bool is_return_redirect (argument* arg, int a, int b){ //check if there is only redirection corresponding to a and b
     int res = -1;
-     for(int i=0; i<arg->nbr_arg; i++){
+    int cpt = 0; 
+    int c = -1;
+    int d = -1;
+    int e = -1;
+    int f = -1;
+    if (a == 1){
+        c = 2; d = 3;
+    }
+    if (a == 4){
+        c = 5; d = 6;
+    }
+    if(b == 4 ){
+        e = 5; f = 6;
+    }
+ 
+     for(int i=0; i<arg->nbr_arg; i++){ 
         res = return_redirect(arg->data[i]);
       if(res != -1){
-        return res;
+      
+        if(b == -1 && res == a || res == c || res == d){ 
+            cpt++;
+        }
+        else if(a == 0 && b == 4){
+            if(res == a || res == b || res == e || res == f){
+            cpt ++;
+            }
+        }
+        else if(a == 1 && b == 4){
+            if(res == a || res == b || res == c || res == d || res == e || res == f){
+            cpt++;
+            }
+        }
+        else{
+            return false;
+        }
       }
    }
-   return -1; 
+   if(b == -1 && cpt <= 1){
+    return true;
+   }
+
+   return cpt <= 2; 
 }
 
 int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, int redirection[3], job* job){
     argument* arg = split(line,'|'); 
+    argument* cp = split(line,'|'); 
     int ret = 1;
 
     int stdout_ = dup(1);
@@ -377,6 +413,13 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
     int length = arg->nbr_arg;
     int pid = -1;
     int redirect_res = -1;
+
+    if(length > MAX_PIPE){
+        dprintf(2,"pipeline: too much cmd");
+        return 1;
+    }
+
+    allocate_process_table(job);
 
 
     for(int i=0; i<length; i++){
@@ -394,10 +437,10 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
                 argument* arg2 = split(arg->data[i],' ');
                 exec(job,stdin_);
                 
-                if(i == 0){ //case where < redirect is present 0 if is there else -1
+                if(i == 0){
            
-                    redirect_res = is_return_redirect(arg2); 
-                    if(redirect_res != -1 && redirect_res != 0){
+                    redirect_res = is_return_redirect(arg2,0,4);
+                    if(!redirect_res){
                 
                     write(stderr_, "pipeline: incorrect redirect\n", 29); 
                     free_argument(arg2);
@@ -412,8 +455,8 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
 
                 if(i > 0){
                     if(i != length-1){
-                        redirect_res = is_return_redirect(arg2); 
-                        if(redirect_res != -1 && redirect_res != 4 && redirect_res != 5 && redirect_res != 6){
+                        redirect_res = is_return_redirect(arg2,4,-1);
+                        if(!redirect_res){
                       
                         write(stderr_, "pipeline: incorrect redirect\n", 29);
                         free_argument(arg2);
@@ -435,9 +478,9 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
                     if(dup2(pipefd_new[1], 1) == -1) perror("dup2");       
                     close(pipefd_new[1]);
                 } 
-                if(i == length - 1){
-                    redirect_res = is_return_redirect(arg2); 
-                    if(redirect_res != -1 && redirect_res != 1 && redirect_res != 2 && redirect_res != 3){
+                if(i == length - 1){ 
+                    redirect_res = is_return_redirect(arg2,1,4);
+                    if(!redirect_res){
              
                     write(stderr_, "pipeline: incorrect redirect\n", 29); 
                     free_argument(arg2);
@@ -459,8 +502,9 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
                  job->job_pid = pid;
                  job->status = 1;
             }
+            job->process_number++;
+            job->process_table[i] = allocate_job(pid,getpid(),1,cp->data[i],false);
 
-            //remettre les redirection a la normal ?
 
                 if(i>0){
                     close(pipefd_old[0]);
@@ -477,33 +521,47 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
 
     int status = -1;
     bool redirect_prb = false;
-    bool is_stopped = false;
-    for(int i = 0 ; i<length; i++){ 
+    int i= 0;
+    while(i<length){ 
          if(redirect_prb){
-            if (kill(-(job->job_pid),9) == -1 ){//so that if there is a redirection problem everyone die
+            if (kill(-(job->job_pid),SIGUSR2) == -1 ){//so that if there is a redirection problem everyone die
                 perror("kill pipeline:");
             }
         }
-        if(is_stopped){
-            if (kill(-(job->job_pid),20) == -1 ){//if one is stopped they al stop (not really like that with pipeline but idk how to do)
-                perror("stop pipeline:");
-            }
-        }
-        waitpid(-(job->job_pid),&status,WUNTRACED); //apparemment c'est suffisant pour que ça marche ???
+        waitpid(job->process_table[i]->job_pid,&status,WUNTRACED); 
        
         if(WIFSIGNALED(status)){
-            redirect_prb = true;
+            if(WTERMSIG(status) == SIGUSR2){
+                  redirect_prb = true;
+            }
+            else {
+                job->process_table[i]->status = 4;
+            }
         }
         if(WIFSTOPPED(status)){
-            is_stopped = true;
-            job->status = 2; //stopped
+            job->process_table[i]->status = 2;
         }
+        i++;
     }
 
     if(redirect_prb){
+        if(i<length){
+            if (kill(-(job->process_table[job->process_number-1]->job_pid),SIGUSR2) == -1 ){
+                    perror("kill pipeline:");
+                }
+        }
        job->status = 4; //killed 
     }
-    if(!is_stopped){
+
+    if(is_killed_or_done(job,4)){
+        job->status = 4;
+        delete_job(job, job_table);
+    }
+    else if(is_stopped(job)){
+        job->status = 2;
+        delete_killed_process(job);
+    }
+    else{
     job->status = 5;//done    
     delete_job(job, job_table);
     }
@@ -513,6 +571,9 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
     if(arg != NULL){
     free_argument(arg);
      arg = NULL;
+    }
+    if(cp != NULL){
+        free_argument(cp);
     }
     dup2(stdout_,1); 
     dup2(stdin_,0); 
@@ -524,10 +585,6 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
 
 
     error:
-    // if(arg != NULL){
-    // // free_argument(arg);
-    // // arg = NULL;
-    // }
     dup2(stdout_,1); 
     dup2(stdin_,0); 
     dup2(stderr_,2); 
@@ -540,80 +597,15 @@ int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, in
     close(stderr_);
     if(failure){ 
         failure = false;
-        kill(getpid(),9); //killing the child when error
-        
-        }
+        kill(getpid(),SIGUSR2); //killing the child when error with sigurs2 
+    }
     
     return 1;
 
 
 }
 
-/*int mypipe (const char* line, job_table* job_table, int last_return){ //cas dup départ pas fait
-    argument* arg = split(line,'|');
-
-    int ret = 1;
-    int stdout_ = dup(1);
-    int stdin_ = dup(0);
-    int stderr_ = dup(2);
-
-    for (int i=0; i<arg->nbr_arg-1; i++){
-        int fd[2] = {-1,-1};
-
-        if(pipe(fd)!=0){
-            goto error;
-        }
-
-        int process_id = fork();
-        if (process_id == -1){
-            close(fd[0]);
-            close(fd[1]);
-            goto error;
-        } if (process_id == 0) { // fils
-            close(fd[0]); // ferme lecture
-            dup2(fd[1],1);
-            argument* arg2 = split(arg->data[i],' ');
-            ret = exec_command(arg2, job_table, last_return);
-            free_argument(arg2);
-            exit(0);
-
-        } else { // père
-            close(fd[1]);
-            dup2(fd[0],0);
-            close(fd[0]);
-            if( waitpid(process_id, NULL, 1) == -1){
-                goto error;
-            }
-
-        }
-
-        if (i==arg->nbr_arg-1){ //fin du pipe
-            argument* arg2 = split(arg->data[i+1],' ');
-            ret = exec_command(arg2, job_table, last_return);
-            free_argument(arg2);
-            close(fd[0]);
-        }
-    }
-
-    free_argument(arg);
-    dup2(stdout_,1); 
-    dup2(stdin_,0); 
-    dup2(stderr_,2); 
-
-    return ret;
-
-
-    error :
-        free_argument(arg);
-        dup2(stdout_,1); 
-        dup2(stdin_,0); 
-        dup2(stderr_,2); 
-        perror("pipe : ");
-        // rétablir fd
-        return 1;
-}*/
-
-argument* process_substitution(const char* line, job_table* job_table, int last_return) {
+argument* process_substitution(const char* line, job_table* job_table, int last_return, int shell_pgid, int shell_fd, int redirection[3], job* job) {
     argument* arg = split(line, '<');
     int fl[arg->nbr_arg-1];
 
@@ -641,7 +633,7 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
             }
             printf("%s \n", s);
             argument* arg2 = split(s, ' ');
-            exec_command(arg2, job_table, last_return);
+            exec_command(arg2, job_table, last_return, shell_pgid, shell_fd, redirection, NULL);
             free_argument(arg2);
             exit(0);
         } else { // père
@@ -690,12 +682,3 @@ corrupted size vs. prev_size
 faire des malloc
 
 */
-
-// int main (int argc, char** argv){
-
-//     //int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid)
-
-//     mpipe("ls | sleep",)
-
-//     return 0;
-// }

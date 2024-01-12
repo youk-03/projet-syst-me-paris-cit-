@@ -42,7 +42,7 @@ void reset_signal(int act){ //SIG_DFL or SIG_IGN
 
 
 
-int forkexec(char * file_name, char ** arguments, job_table* job_table, int shell_fd){
+int forkexec(char * file_name, char ** arguments, job_table* job_table, int shell_fd, char *line_read){
     errno=0;
     int process_id=fork();
     int status;
@@ -55,8 +55,7 @@ int forkexec(char * file_name, char ** arguments, job_table* job_table, int shel
 
         if(setpgid(getpid(),getpid()) != 0){
                 perror("forkexec l.30");
-            }
-       // printf("pid: %d, pgid: %d\n", getpid(), getpgid(getpid()));    
+            } 
         
         put_foreground(NULL, getpgid(getpid()), job_table, shell_fd); 
 
@@ -67,7 +66,7 @@ int forkexec(char * file_name, char ** arguments, job_table* job_table, int shel
         exit(1); 
     } else {
 
-         job* job = allocate_job(process_id, getppid(), 1, file_name, false); 
+         job* job = allocate_job(process_id, getppid(), 1, line_read, false); 
          add_job(job, job_table);
 
          int res = wait_for_job(job,job_table,true);
@@ -117,7 +116,6 @@ else{
     if(setpgid(getpid(), job->job_pid) == -1){
         perror("exec setpgid");
     } 
-     // printf("pid: %d, job_pid: %d\n", getpid(), job->job_pid);
 
 }
  reset_signal(0); //annuler les signaux transmis par jsh
@@ -157,9 +155,16 @@ int put_foreground (job *job, pid_t pgid, job_table* job_table, int shell_fd){
         return 1;
     }
 
-      if(job->status == 4){
+      if(job->status == 2 || job->status == -2){
         cont = true;
     }
+
+     if(cont){ 
+        if(kill(-(job->job_pid), SIGCONT)<0){
+        perror("put_foreground");
+        return 1;
+    }
+}
 
     if(tcsetpgrp(shell_fd, job->job_pid) == -1){
         perror("put foreground");
@@ -168,22 +173,24 @@ int put_foreground (job *job, pid_t pgid, job_table* job_table, int shell_fd){
 
      reset_signal(0);
 
-    if(cont){ 
+    ///////////////////////////////////////////////////////// ici non car en foreground
+        if(job->process_number > 0){
+            for(int i=0; i<job->process_number; i++){
+                job->process_table[i]->status = 1;
+            }
+        }
+    //////////////////////////////////////////////////////////    
 
-        if(kill(-(job->job_pid), SIGCONT)<0){
-        perror("put_foreground");
-        return 1;
     }
-
-    }
-
+    if(job != NULL){
     wait_for_job(job, job_table,false);
+    }
 
     //restoring the shell is done after the function call
-    }
-
-    return 0;
+     return 0;
 }
+
+
 
 void put_jsh_foreground (pid_t shell_pgid, int shell_fd){
 
@@ -207,6 +214,49 @@ int put_background (job *job){
 
 
 int wait_for_job (job *job, job_table *job_table, bool id){ //delete from job_table
+
+   
+    if(job->process_number>0){
+        int length = job->process_number;
+        int i = 0;
+        int status = -1;
+         //il faut attendre chacun des proc 1 par 1 en gros la même que dans mpipe je crois
+    //retourner 0 si il fini 1 sinon ?
+
+    while(i<length){ 
+       
+        waitpid(job->process_table[i]->job_pid,&status,WUNTRACED); 
+       
+        if(WIFSIGNALED(status)){
+                job->process_table[i]->status = 4;
+            }
+        
+        else if(WIFSTOPPED(status)){
+            job->process_table[i]->status = 2;
+            //mettre le fils en question a stop
+        }
+        i++;
+    }
+    //checker
+        if(is_killed_or_done(job,4)){
+        job->status = 4;
+        //print qqch ?
+        delete_job(job, job_table);
+        return 1;
+    }
+      else if(is_stopped(job)){//detecter si y'en a de kill et les enlever
+        job->status = 2;
+        delete_killed_process(job);
+        return 1;
+    }
+    else{
+    job->status = 5;//done    
+    delete_job(job, job_table);
+    }
+
+        return 0;
+    }
+   
 
     int status = -1;
 

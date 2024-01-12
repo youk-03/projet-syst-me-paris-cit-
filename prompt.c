@@ -98,7 +98,7 @@ bool is_redirect(argument* arg){
    return false;
 }
 
-bool is_pipe(const char* line){ //////////////////////////////////////////////////////////////////////////////////////
+bool is_pipe(const char* line){ 
 if(!line){
    return false;
 }
@@ -111,6 +111,9 @@ if(!line){
 }
 
 bool is_process_substitution(argument* arg){
+   if(arg == NULL){
+      return false;
+   }
    for(int i=0; i<arg->nbr_arg; i++){
       if (strcmp(arg->data[i],"<(")==0) return true;
    }

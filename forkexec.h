@@ -6,7 +6,7 @@
 #include "mystring.h"
 #include "job.h"
 
-int forkexec(char *, char **, job_table*, int); 
+int forkexec(char *, char **, job_table*, int, char*); 
 
 int forkexecBackground( char *, char **);
 

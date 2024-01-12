@@ -11,9 +11,9 @@ int exec_command (argument* arg, job_table* job_table, int last_return, int shel
 
 int mpipe (char* line, job_table* job_table, int last_return, int shell_pgid, int redirection[3], job* job);
 
-int is_return_redirect (argument* arg);
+bool is_return_redirect (argument* arg, int a, int b);
 
-argument* process_substitution(const char* line, job_table* job_table, int last_return);
+argument* process_substitution(const char* line, job_table* job_table, int last_return, int shell_pgid, int shell_fd, int redirection[3], job* job);
 
 
 #endif 

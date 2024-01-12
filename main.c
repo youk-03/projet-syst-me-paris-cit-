@@ -52,7 +52,6 @@ int main (int argc, char *argv[]){
     bool isredirect = false;
 
     if(setpgid(0,0) != 0){ perror("main l.48"); }
-    //printf("shell pid %d, shell pgid %d\n", shell_pgid, getpgid(0));
 
     while(1){
 
@@ -84,7 +83,7 @@ int main (int argc, char *argv[]){
     arg=split(line_read,' ');
 
     if (is_process_substitution(arg)){
-        argument* tmp = process_substitution(line_read,job_table,last_return);
+        argument* tmp = process_substitution(line_read,job_table,last_return, shell_pgid, stdin_, redirection, NULL);
         if (tmp!=NULL){
             free_argument(arg);
             arg=tmp;
@@ -157,8 +156,8 @@ int main (int argc, char *argv[]){
 
         else{
 
-        last_return = forkexec(arg->data[0],arg->data,job_table, stdin_);  //forkexec
-        put_jsh_foreground(shell_pgid, stdin_); ////////////////////////////////////////////////////////////////////
+        last_return = forkexec(arg->data[0],arg->data,job_table, stdin_, line_read);  //forkexec
+        put_jsh_foreground(shell_pgid, stdin_); 
 
         }
 

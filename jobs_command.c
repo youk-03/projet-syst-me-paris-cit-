@@ -120,7 +120,7 @@ int option_t(int pid, int fd){
         dprintf(fd,"Stopped");
         break;
     case 'Z':
-        dprintf(fd,"Done"); // zombie = done ????
+        dprintf(fd,"Zombie"); 
         break;
     case 'S':  // for S and D: sleeping == stopped????
         dprintf(fd,"Sleeping");
@@ -267,7 +267,7 @@ void maj_main_print(job_table* job_table, bool stdout){
         switch(job_table->table[ic]->status){
             case 1: /*nothing to do*/ ic++; break; //running
             case 2: print_jobs(job_table->table[ic],fd); ic++; break; //stopped
-            case 3: print_jobs(job_table->table[ic],fd); delete_job(job_table->table[ic], job_table) ;ic++;  break; //detached
+            case 3: print_jobs(job_table->table[ic],fd); delete_job(job_table->table[ic], job_table) ; break; //detached
             case 4: print_jobs(job_table->table[ic],fd); delete_job(job_table->table[ic], job_table); break; //killed
             case 5: print_jobs(job_table->table[ic],fd); delete_job(job_table->table[ic], job_table); break; //done
             default: ic++; break;

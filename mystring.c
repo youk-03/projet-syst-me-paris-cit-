@@ -37,7 +37,6 @@ size_t size_s2 = strlen(src) + 1; // pour 0
 size_t final_length = dest->length + size_s2;
 if(dest->capacity < final_length){
   printf("dest capacity too low");
-  // realloc *2 a la place ///////////////////////////////////////////////////////::
   return 0;
 }
 
@@ -79,7 +78,6 @@ argument* split(const char* tosplit, char delim ){
   int words_it = 0;
   char** res= NULL;
 
-   //variable
 
   if(tosplit == NULL){
     return NULL;
@@ -171,7 +169,7 @@ argument* split(const char* tosplit, char delim ){
 
   error:
   perror("in split: ");
-  exit(1); //TODO : changer
+  exit(1); 
 
 }
 
@@ -231,24 +229,3 @@ argument* cpy_argument_end (argument* arg, int start){
   exit(1);
 }
 
-// int main(){
-
-//   char *read = "ls -l > ouh";
-//   argument* arg = split(read,' ');
-//   argument* arg2 = cpy_argument(arg,2);
-  
-//   for(int i=0; i<arg->nbr_arg; i++){
-//     printf("%s\n",arg->data[i]);
-//   }
-
-//   puts(" ");
-
-//   for(int i=0; i<arg2->nbr_arg; i++){
-//     printf("%s\n",arg2->data[i]);
-//   }
-
-//   free_argument(arg);
-//   free_argument(arg2);
-
-
-// }
