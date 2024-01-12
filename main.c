@@ -164,14 +164,23 @@ int main (int argc, char *argv[]){
         break;
 
         case 6: 
+
         maj_job_table(job_table,true);
-        if (arg->nbr_arg > 1) {
-            last_return = jobs(false,arg->data[1],job_table);
-        } else {
+        if (arg->nbr_arg > 2) {
+            if (strcmp(arg->data[1],"-t")==0){
+                last_return = jobs(true,arg->data[2],job_table);
+            }
+        } else if (arg->nbr_arg > 1) {
+            if (strcmp(arg->data[1],"-t")==0){
+            last_return = jobs(true,NULL,job_table);
+            } else {
+              last_return = jobs(false,arg->data[1],job_table);
+            }
+        }
+        else {
             last_return = jobs(false, NULL, job_table);
         }
-        break; //jobs
-
+        break; //jobs   
         case 7: //kill
 
         if(arg->nbr_arg > 2){

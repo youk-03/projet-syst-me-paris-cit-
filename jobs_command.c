@@ -219,7 +219,6 @@ if (arg==NULL){
     }
 
 } else if (arg[0]=='%'){
-
     string_jobnumber=calloc(strlen(arg),'0'); 
     if(string_jobnumber==NULL) {
         perror("malloc");
@@ -241,7 +240,7 @@ if (arg==NULL){
     return 0;
     } else {
     
-   
+    print_table_of_certain_jobs(job_table,atoi(string_jobnumber));
     free(string_jobnumber);
     return 0;
     }
