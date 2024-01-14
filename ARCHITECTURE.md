@@ -49,7 +49,14 @@ main:
 Boucle qui fait tourner le programme
 
 Makefile: 
-Permet de compiler le programme grâce à la commande make. Pour retirer les fichiers créés  à la fin, il suffit de saisir la commande make clean.
+Permet de compiler le programme grâce à la commande 
+```
+make
+```
+Pour retirer les fichiers créés  à la fin, il suffit de saisir la commande
+```
+make clean
+```
 
 
 Implémentation du sujet:
