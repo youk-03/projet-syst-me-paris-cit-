@@ -665,20 +665,3 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
     return NULL;
 
 }
-
-/*
-[0]...x/brunetj/Documents/SY$ diff <( ls projet-sy5) <( ls sy5-2023-2024)
-forkexec: Incorrect command :: No such file or directory
-forkexec: Incorrect command :: No such file or directory
-malloc(): memory corruption (fast)
-
-diff <( ls projet-sy5 ) <( ls sy5-2023-2024 )
-forkexec: Incorrect command :: No such file or directory
-forkexec: Incorrect command :: No such file or directory
-diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
-diff: 0x7fffe7c0aa10: Aucun fichier ou dossier de ce type
-corrupted size vs. prev_size
-
-faire des malloc
-
-*/
