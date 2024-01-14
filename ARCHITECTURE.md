@@ -3,12 +3,14 @@
 Projet de SY5 2023-2024
 
 Structures utilisées: 
+
 Dans mystring.h est définie une structure argument qui est utilisée pour découper la ligne de commande lue par rapport à un délimiteur choisi grâce à la fonction split.
 
 Dans job.h sont définies une structure job et une structure  job_table. Comme son nom l’indique, la structure job nous sert à stocker les jobs et les informations qui nous sont utiles afin de travailler avec la structure job_table qui est une table de job.
 
 
 Organisation des fichiers:
+
 mystring:
 
 Fonction split qui retourne un argument et toutes les fonctions qui allouent ou libèrent la structure argument.
