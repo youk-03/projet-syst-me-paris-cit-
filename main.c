@@ -218,7 +218,7 @@ int main (int argc, char *argv[]){
 
         case 10: // pipeline
    
-        job = allocate_job(-1,-1,-1,line_read,true);
+        job = allocate_job(-1,getpid(),-1,line_read,true);
         if(job!= NULL){
            add_job(job,job_table); 
         }
@@ -267,12 +267,13 @@ int main (int argc, char *argv[]){
     }
 }
 
-
-  error:
-    exit_jsh(1,job_table);
-
-
-   
+    close(stderr_);
+    close(stdin_);
+    close(stdout_);
 
     return 0;
+
+    error:
+    exit_jsh(1,job_table);
+    return 1;
 }

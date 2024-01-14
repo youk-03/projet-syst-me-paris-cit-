@@ -283,54 +283,54 @@ void maj_main_print(job_table* job_table, bool stdout){
 
 //tests if job is detached 
 
-// int is_detached(job_table * job_table, int job_id) {
+int is_detached(job_table * job_table, int job_id) {
 
-//     int bash_pid=getppid(); // jsh's pid
-//     char proc_stat_filename[MAX_ALLOC];
-//     char other_char[MAX_ALLOC];
-//     char state;
-//     int other, ppid; 
-//     int scan=-1 ;
-//     int nb_unfinished=0;
+    int bash_pid=getpid(); // jsh's pid
+    char proc_stat_filename[MAX_ALLOC];
+    char other_char[MAX_ALLOC];
+    char state;
+    int other, ppid; 
+    int scan=-1 ;
+    int nb_unfinished=0;
 
-//     for (int i=0 ; i<job_table->length ; i++) {
+    for (int i=0 ; i<job_table->length ; i++) {
 
-//         if (job_id==job_table->table[i]->id){ //check matching job id
+        if (job_id==job_table->table[i]->id){ //check matching job id
 
-//                 if (job_table->table[i]->status!=4 && job_table->table[i]->status!=5) { //job status can't be killed or done, proc file doesn't exist
+                if (job_table->table[i]->status!=4 && job_table->table[i]->status!=5) { //job status can't be killed or done, proc file doesn't exist
                 
-//                 sprintf(proc_stat_filename, "/proc/%d/stat",job_table->table[i]->id);
+                sprintf(proc_stat_filename, "/proc/%d/stat",job_table->table[i]->id);
 
-//                 FILE *f_stat = fopen(proc_stat_filename, "r");
-//                 if (f_stat==NULL) {
-//                     perror("jobs : open");
-//                     exit(1);
-//                 }
-
-            
-//                 scan=fscanf(f_stat, "%d %s %c %d",&other, other_char, &state, &ppid);
-
-//                 if(scan==-1) {
-//                     perror("jobs: scanf");
-//                     exit(1);
-//                 }
-
-//                 fclose(f_stat);
-            
-//                 if (ppid==bash_pid){  // if launched by bash and unfinished, then job is not detached. else nb of unfinished jobs not launched by bash +1 
-//                     return 1 ;
-//                 } else {
-//                     nb_unfinished++;
-//                 }
+                FILE *f_stat = fopen(proc_stat_filename, "r");
+                if (f_stat==NULL) {
+                    perror("jobs : open");
+                    exit(1);
+                }
 
             
-//             }
+                scan=fscanf(f_stat, "%d %s %c %d",&other, other_char, &state, &ppid);
 
-//         }
+                if(scan==-1) {
+                    perror("jobs: scanf");
+                    exit(1);
+                }
 
-//     } 
+                fclose(f_stat);
+            
+                if (ppid==bash_pid){  // if launched by bash and unfinished, then job is not detached. else nb of unfinished jobs not launched by bash +1 
+                    return 1 ;
+                } else {
+                    nb_unfinished++;
+                }
+
+            
+            }
+
+        }
+
+    } 
     
-//     if (nb_unfinished>0) return 0;
-//     else return 1;
+    if (nb_unfinished>0) return 0;
+    else return 1;
 
-// }
+}

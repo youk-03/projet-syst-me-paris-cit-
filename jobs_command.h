@@ -11,5 +11,6 @@ int option_t(int, int);
 int jobs_t(int, int);
 int jobs(bool, char *, job_table *);
 void maj_main_print(job_table* job_table, bool stdout);
+int is_detached(job_table * job_table, int job_id);
 
 #endif

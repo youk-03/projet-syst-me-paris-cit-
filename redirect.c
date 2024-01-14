@@ -235,7 +235,6 @@ int return_redirect(char * string){
 int exec_command (argument* arg, job_table* job_table, int last_return, int shell_pgid, int shell_fd, int redirection[3], job* job){
     int ret = 1;
 
-    //faut peut être les fermer non ?
     int stdout_ = dup(1);
     int stdin_ = dup(0);
     int stderr_ = dup(2);
@@ -348,6 +347,10 @@ int exec_command (argument* arg, job_table* job_table, int last_return, int shel
     }
     isredirect=false;
     }
+
+    close(stderr_);
+    close(stdin_);
+    close(stdout_);
 
     return ret;
 }
@@ -629,7 +632,7 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
             
             char* s = arg->data[i+1];
             for (int j=0; j<strlen(s); j++){
-                if (s[j]=='('|| s[j]==')') s[j]=' '; // un peu dangereux ???? ///////////////
+                if (s[j]=='('|| s[j]==')') s[j]=' '; 
             }
             printf("%s \n", s);
             argument* arg2 = split(s, ' ');

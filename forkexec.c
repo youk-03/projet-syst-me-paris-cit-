@@ -102,7 +102,7 @@ int forkexecBackground( char * file_name, char ** arguments){
 
 int exec(job* job, int shell_fd){ 
 
-//si job->job_pid == -1 le mettre a getpid et setpgrd a job_pid
+
 if(job->job_pid == -1){
 
     job->job_pid = getpid();
@@ -110,7 +110,7 @@ if(job->job_pid == -1){
     if(setpgid(getpid(), job->job_pid) == -1){
         perror("exec setpgidddd");
     }
-    put_foreground(NULL, job->job_pid,NULL,shell_fd); //job_table pas utile ici
+    put_foreground(NULL, job->job_pid,NULL,shell_fd);
 }
 else{
     if(setpgid(getpid(), job->job_pid) == -1){
@@ -118,7 +118,7 @@ else{
     } 
 
 }
- reset_signal(0); //annuler les signaux transmis par jsh
+ reset_signal(0); //reset signal it gets from jsh
 
 }
 
@@ -173,13 +173,12 @@ int put_foreground (job *job, pid_t pgid, job_table* job_table, int shell_fd){
 
      reset_signal(0);
 
-    ///////////////////////////////////////////////////////// ici non car en foreground
         if(job->process_number > 0){
             for(int i=0; i<job->process_number; i++){
                 job->process_table[i]->status = 1;
             }
         }
-    //////////////////////////////////////////////////////////    
+   
 
     }
     if(job != NULL){
@@ -220,8 +219,7 @@ int wait_for_job (job *job, job_table *job_table, bool id){ //delete from job_ta
         int length = job->process_number;
         int i = 0;
         int status = -1;
-         //il faut attendre chacun des proc 1 par 1 en gros la même que dans mpipe je crois
-    //retourner 0 si il fini 1 sinon ?
+ 
 
     while(i<length){ 
        
@@ -237,14 +235,14 @@ int wait_for_job (job *job, job_table *job_table, bool id){ //delete from job_ta
         }
         i++;
     }
-    //checker
+    //check
         if(is_killed_or_done(job,4)){
         job->status = 4;
-        //print qqch ?
+  
         delete_job(job, job_table);
         return 1;
     }
-      else if(is_stopped(job)){//detecter si y'en a de kill et les enlever
+      else if(is_stopped(job)){
         job->status = 2;
         delete_killed_process(job);
         return 1;

@@ -10,49 +10,6 @@
 #include <readline/history.h>
 
 
-struct string * string_new(size_t capacity) {
-  if (capacity == 0) return NULL;
-  char* data = malloc(capacity);
-  if (!data) { return NULL; }
-  struct string * str = malloc(sizeof(*str));
-  if (!str) {
-    free(data);
-    return NULL;
-  }
-  str->capacity = capacity;
-  str->length = 0;
-  str->data = data;
-  str->data[0] = 0;
-  return str;
-}
-
-void string_delete(struct string * str) {
-  free(str->data);
-  free(str);
-}
-
-int string_append (struct string * dest, char * src) {
-
-size_t size_s2 = strlen(src) + 1; // pour 0
-size_t final_length = dest->length + size_s2;
-if(dest->capacity < final_length){
-  printf("dest capacity too low");
-  return 0;
-}
-
-memmove(dest->data+dest->length, src, size_s2);
-
-dest->length+= size_s2 - 1;
-
-  return 1;
-}
-
-void string_truncate (struct string * str, size_t nchars) {
-  if (nchars > str->length) { nchars = str->length; }
-  str->data[str->length-nchars] = 0;
-  str->length -= nchars;
-}
-
 void free_argument(argument* tofree){
   for(int i=0; i<tofree->nbr_arg; i++){
     free(tofree->data[i]);

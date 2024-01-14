@@ -118,7 +118,7 @@ job* get_job (job_table* job_table, char* id){
 }
 //job
 
-void free_job (job* job){ //deja modif pour pipeline en fait
+void free_job (job* job){ 
 
     if(job->process_number > 0){
         for(int i=0; i<job->process_number; i++){
@@ -178,7 +178,6 @@ bool is_stopped(job* job){
 }
 
 bool is_killed_or_done(job* job, int status){
-   // printf("job process_number = %d\n", job->process_number);
     int cpt = 0;
     for (int i=0; i<job->process_number; i++){
         if(job->process_table[i]->status == status){
@@ -219,13 +218,8 @@ int delete_killed_process(job* jobs){
     return 0;
 }
 
-//0 1 2 3 4 5
-//number_process = 6
-//met status a jour, j'appelle delete_killed_processus sur le machin
-//si pipeline etais a run et qu'ils sont tous à stop le job -> stop !!
-//pareil pour kill !!
 
-int maj_process_table(job* job){
+int maj_process_table(job* job){//ajouter detached is_detached(job_table, job-id)
 
     bool killed = false;
     bool done = false;
@@ -306,7 +300,7 @@ int maj_process_table(job* job){
 
 }
 
-int maj_job_table (job_table* job_table, bool stdout){ //fonction intermediaire qui wait sur la process_table ?
+int maj_job_table (job_table* job_table, bool stdout){ 
     int status = -1;
     int wait = -1;
 
