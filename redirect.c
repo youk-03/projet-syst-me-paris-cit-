@@ -634,7 +634,7 @@ argument* process_substitution(const char* line, job_table* job_table, int last_
             for (int j=0; j<strlen(s); j++){
                 if (s[j]=='('|| s[j]==')') s[j]=' '; 
             }
-            printf("%s \n", s);
+            // printf("%s \n", s);
             argument* arg2 = split(s, ' ');
             exec_command(arg2, job_table, last_return, shell_pgid, shell_fd, redirection, NULL);
             free_argument(arg2);

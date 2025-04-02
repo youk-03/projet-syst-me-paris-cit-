@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "job.h"
 #include "jobs_command.h"
